@@ -1,0 +1,23 @@
+{
+  "title": "v-micro",
+  "author": "v-micro",
+  "description": "Less is more.",
+  "language": "zh-hans",
+  "gitbook": "3.2.3",
+  "plugins": [
+    "copy-code-button",
+    "expandable-chapters-small",
+    "search-plus",
+    "hide-element"
+  ],
+  "pluginsConfig": {
+    "hide-element": {
+      "elements": [".gitbook-link"]
+    }
+  },
+  "links": {
+    "sidebar": {
+      "GitHub": "https://github.com/v-micro"
+    }
+  }
+}
