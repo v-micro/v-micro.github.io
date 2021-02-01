@@ -179,10 +179,15 @@ yum &#x2013;y install memcached
 <blockquote>
 <p>&#x4E0B;&#x8F7D;lua &#x6A21;&#x5757;&#xFF0C;lua-memcache&#x64CD;&#x4F5C;&#x5E93;&#x6587;&#x4EF6;&#x548C;nginx&#x5305;</p>
 </blockquote>
-<pre><code class="lang-bash">wget https://github.com/simpl/ngx_devel_kit/archive/v0.2.18.tar.gz
+<pre><code class="lang-bash">wget https://github.com/openresty/luajit2/archive/v2.1-20201229.tar.gz
+wget https://github.com/simpl/ngx_devel_kit/archive/v0.2.18.tar.gz
 wget https://github.com/chaoslawful/lua-nginx-module/archive/v0.8.5.tar.gz
 wget https://github.com/agentzh/lua-resty-memcached/archive/v0.11.tar.gz
 wget http://nginx.org/download/nginx-1.4.2.tar.gz
+
+<span class="hljs-comment">#&#x5B89;&#x88C5;luajit2</span>
+<span class="hljs-built_in">cd</span> luajit2-2.1-20201229
+make install PREFIX=/usr/<span class="hljs-built_in">local</span>/luajit2
 
 <span class="hljs-comment">#&#x89E3;&#x538B;&#x7F16;&#x8BD1;&#x5B89;&#x88C5;</span>
 tar xvf nginx-1.4.2.tar.gz
@@ -208,90 +213,81 @@ cp -r lua-resty-memcached-0.11/lib/resty/ /usr/lib64/lua/5.1/
 <pre><code class="lang-bash">vim /soft/nginx/conf/nginx.conf
 
 worker_processes  1;
+
 events {
     worker_connections  1024;
 }
+
 http {
     include       mime.types;
     default_<span class="hljs-built_in">type</span>  application/octet-stream;
-    sendfile        on;
-    keepalive_timeout  65;
-
-    proxy_next_upstream     error timeout;
-    proxy_redirect          off;
-    proxy_<span class="hljs-built_in">set</span>_header        Host <span class="hljs-variable">$host</span>;
-    proxy_<span class="hljs-built_in">set</span>_header        X-Real-IP <span class="hljs-variable">$http_x_forwarded_for</span>;
-    proxy_<span class="hljs-built_in">set</span>_header        X-Forwarded-For <span class="hljs-variable">$proxy_add_x_forwarded_for</span>;
-
-    client_max_body_size    100m;
-    client_body_buffer_size 256k;
-
-    proxy_connect_timeout   180;
-    proxy_send_timeout      180;
-    proxy_<span class="hljs-built_in">read</span>_timeout      180;
-    proxy_buffer_size       8k;
-    proxy_buffers       8 64k;
-    proxy_busy_buffers_size 128k;
-    proxy_temp_file_write_size 128k;
 
     upstream client {
-        server   192.168.1.2:80;
+        server 10.11.4.62:81;
     }
     upstream client_<span class="hljs-built_in">test</span> {
-        server   192.168.1.2:81;
+        server 10.11.4.62:82;
     }
 
+    sendfile        on;
+
+    keepalive_timeout  65;
+
+    <span class="hljs-comment">#gzip  on;</span>
     server {
-      listen       80;
-      server_name  localhost;
-       location / {
-       content_by_lua <span class="hljs-string">&apos;
-            clientIP = ngx.req.get_headers()[&quot;X-Real-IP&quot;]
-            if clientIP == nil then
-                clientIP = ngx.req.get_headers()[&quot;x_forwarded_for&quot;]
-            end
-            if clientIP == nil then
-                clientIP = ngx.var.remote_addr
-            end
-                local memcached = require &quot;resty.memcached&quot;
-                local memc, err = memcached:new()
-                if not memc then
-                    ngx.say(&quot;failed to instantiate memc: &quot;, err)
-                    return
-                end
-                local ok, err = memc:connect(&quot;127.0.0.1&quot;, 11211)
-                if not ok then
-                    ngx.say(&quot;failed to connect: &quot;, err)
-                    return
-                end
-                local res, flags, err = memc:get(clientIP)
-                if err then
-                    ngx.say(&quot;failed to get clientIP &quot;, err)
-                    return
-                end
-                if res == &quot;1&quot; then
-                    ngx.exec(&quot;@client_test&quot;)
-                    return
-                end
-                 ngx.exec(&quot;@client&quot;)             
-               &apos;</span>;
-       }
-       location @client{
-           proxy_pass http://client;
-       }
-      location @client_<span class="hljs-built_in">test</span>{
-           proxy_pass http://client_<span class="hljs-built_in">test</span>;
-       }
+        listen       80;
+        server_name  localhost;
 
-    location /hello {
-       default_<span class="hljs-built_in">type</span> <span class="hljs-string">&apos;text/plain&apos;</span>;
-      content_by_lua <span class="hljs-string">&apos;ngx.say(&quot;hello, lua&quot;)&apos;</span>;
-    }
+        location @client{
+            proxy_pass http://client;
+        }
 
-    location = /50x.html {
-        root   html;
+        location @client_<span class="hljs-built_in">test</span>{
+            proxy_pass http://client_<span class="hljs-built_in">test</span>;
+        }
+
+        location / {
+            <span class="hljs-comment"># lua &#x811A;&#x672C;</span>
+            content_by_lua <span class="hljs-string">&apos;
+             package.path = package.path..&quot;;/home/pkg/lua+nginx/lua-resty-memcached-0.11/lib/resty/?.lua&quot;
+
+             local headers=ngx.req.get_headers()
+             local ip=headers[&quot;X-REAL-IP&quot;] or headers[&quot;X_FORWARDED_FOR&quot;] or ngx.var.remote_addr or &quot;0.0.0.0&quot;
+
+             local memcached = require &quot;memcached&quot;
+             local memc, err = memcached:new()
+             if not memc then
+                 ngx.say(&quot;failed to instantiate memc: &quot;, err)
+                 return
+             end
+
+             local ok, err = memc:connect(&quot;10.11.4.39&quot;, 11211)
+             if not ok then
+                 ngx.say(&quot;failed to connect: &quot;, err)
+                 return
+             end
+
+             local res, flags, err = memc:get(ip)
+             if err then
+                 ngx.say(&quot;failed to get ip &quot;, err)
+                 return
+             end
+
+             if res == &quot;1&quot; then
+                 ngx.exec(&quot;@client_test&quot;)
+                 return
+             end
+
+             ngx.exec(&quot;@client&quot;)
+            &apos;</span>;
+            default_<span class="hljs-built_in">type</span> <span class="hljs-string">&apos;text/html&apos;</span>;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
     }
-   }
 }
 </code></pre>
 <blockquote>
@@ -323,84 +319,6 @@ nginx: configuration file /soft/nginx/conf/nginx.conf <span class="hljs-built_in
 <li>&#x5728;memcached&#x4E2D;&#x4EE5;&#x4F60;&#x7684;&#x5BA2;&#x6237;&#x673A;&#x5730;&#x5740;&#x4E3A;key&#xFF0C;value&#x503C;&#x4E3A;1 &#x6807;&#x8BC6;&#x8BBE;&#x7F6E;&#x4E3A;&#x7070;&#x5EA6;&#x53D1;&#x5E03;</li>
 </ul>
 <p>ps&#xFF1A;&#x5982;&#x679C;&#x8BBE;&#x7F6E;&#x4E3A;1&#x8BBF;&#x95EE;&#x5230;81&#x5219;&#x8BBF;&#x95EE;&#x7070;&#x5EA6;&#x4EE3;&#x7801;&#x5982;&#x679C;&#x8BBE;&#x7F6E;&#x4E3A;0&#x5219;&#x8BBF;&#x95EE;&#x6B63;&#x5E38;&#x4EE3;&#x7801;&#x3002;</p>
-<h3 id="&#x4E0A;&#x6587;&#x4F7F;&#x7528;memcached-&#x4E5F;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;redis&#x4E0B;&#x9762;&#x662F;redis&#x4F7F;&#x7528;&#x6559;&#x7A0B;">&#x4E0A;&#x6587;&#x4F7F;&#x7528;memcached &#x4E5F;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;redis&#x4E0B;&#x9762;&#x662F;redis&#x4F7F;&#x7528;&#x6559;&#x7A0B;</h3>
-<blockquote>
-<p>nignx http&#x5757;&#x4E2D;&#x6DFB;&#x52A0;</p>
-</blockquote>
-<pre><code class="lang-bash">//&#x5916;&#x90E8;&#x914D;&#x7F6E;
-include lua.conf;
-//&#x65B0;&#x7CFB;&#x7EDF;&#x5730;&#x5740;
-upstream new{
-      server 192.168.1.2:80;
-}
-//&#x8001;&#x7CFB;&#x7EDF;&#x5730;&#x5740;
-upstream old{
-      server 192.168.1.2:81;
-}
-</code></pre>
-<blockquote>
-<p>lua.conf nginx&#x7684;server&#x914D;&#x7F6E;</p>
-</blockquote>
-<pre><code class="lang-bash">server {
-      listen       80;
-      server_name  _;
-
-      location /lua {
-          //redis lua &#x811A;&#x672C;
-          content_by_lua_file conf/redistest.lua;
-          default_<span class="hljs-built_in">type</span> <span class="hljs-string">&apos;text/html&apos;</span>;
-      }
-      //&#x4EE3;&#x7406;&#x5230;&#x65B0;&#x670D;&#x52A1;
-      location @new{
-          proxy_pass http://new;
-      }
-      //&#x4EE3;&#x7406;&#x5230;&#x539F;&#x6765;&#x670D;&#x52A1;
-      location @old{
-          proxy_pass http://old;
-      }
-}
-</code></pre>
-<blockquote>
-<p>&#x4E3B;&#x8981;&#x7F16;&#x5199;lua&#x811A;&#x672C;</p>
-</blockquote>
-<pre><code class="lang-bash">//&#x5F15;&#x5165;redis&#x6A21;&#x5757;&#xFF0C;&#x53EA;&#x80FD;&#x8054;&#x5355;&#x673A;
-<span class="hljs-built_in">local</span> redis = require <span class="hljs-string">&quot;resty.redis&quot;</span>
-<span class="hljs-built_in">local</span> cache = redis.new()
-cache:<span class="hljs-built_in">set</span>_timeout(60000)
-//&#x94FE;&#x63A5;
-<span class="hljs-built_in">local</span> ok, err = cache.connect(cache, <span class="hljs-string">&apos;192.168.19.10&apos;</span>, 6379)
-//&#x8FD9;&#x91CC;&#x5982;&#x679C;&#x94FE;&#x63A5;redis&#x5931;&#x8D25;&#xFF0C;&#x5219;&#x8F6C;&#x53D1;&#x5230;@old&#x5BF9;&#x5E94;&#x7684;&#x670D;&#x52A1;&#x5668;&#xFF08;&#x4F20;&#x7EDF;&#x670D;&#x52A1;&#xFF09;
-<span class="hljs-keyword">if</span> not ok <span class="hljs-keyword">then</span>
-   ngx.exec(<span class="hljs-string">&quot;@old&quot;</span>)
-   <span class="hljs-built_in">return</span>
-end
-
-//&#x5982;&#x679C;nginx&#x53EA;&#x6709;&#x4E00;&#x5C42;&#x5206;&#x53D1;&#x5C42;&#xFF0C;&#x8FD9;&#x4E0B;&#x9762;&#x8FD9;&#x56DB;&#x884C;&#x4EE3;&#x7801;&#x53EF;&#x4EE5;&#x4E0D;&#x5199;
-<span class="hljs-built_in">local</span> <span class="hljs-built_in">local</span>_ip = ngx.req.get_headers()[<span class="hljs-string">&quot;X-Real-IP&quot;</span>]
-<span class="hljs-keyword">if</span> <span class="hljs-built_in">local</span>_ip == nil <span class="hljs-keyword">then</span>
-        <span class="hljs-built_in">local</span>_ip = ngx.req.get_headers()[<span class="hljs-string">&quot;x_forwarded_for&quot;</span>]
-end
-//&#x4ECE;remote_addr&#x53D8;&#x91CF;&#x4E2D;&#x62FF;&#x5230;&#x5BA2;&#x6237;&#x7AEF;ip&#xFF0C;&#x540C;&#x6837;nginx&#x53EA;&#x6709;&#x4E00;&#x5C42;&#x7684;&#x65F6;&#x5019;&#x6B64;&#x53D8;&#x91CF;&#x4E3A;&#x5BA2;&#x6237;&#x7AEF;ip&#xFF0C;&#x591A;&#x5C42;&#x4E0D;&#x662F;
-<span class="hljs-keyword">if</span> <span class="hljs-built_in">local</span>_ip == nil <span class="hljs-keyword">then</span>
-        <span class="hljs-built_in">local</span>_ip = ngx.var.remote_addr
-end
-//&#x5728;redis&#x4E2D;&#x6839;&#x636E;&#x5BA2;&#x6237;&#x7AEF;ip&#x83B7;&#x53D6;&#x662F;&#x5426;&#x5B58;&#x5728;&#x503C;&#xFF1B;redis&#x4E2D;&#x5B58;&#x653E;&#x7684;&#x662F;key:ip val:ip,&#x5B58;&#x653E;&#x7684;ip&#x8BBF;&#x95EE;&#x5FAE;&#x670D;&#x52A1;
-<span class="hljs-built_in">local</span> intercept = cache:get(<span class="hljs-built_in">local</span>_ip)
-//&#x5982;&#x679C;&#x5B58;&#x5728;&#x5219;&#x8F6C;&#x53D1;&#x5230;@new&#x5BF9;&#x5E94;&#x7684;&#x670D;&#x52A1;&#x5668;&#xFF08;&#x5FAE;&#x670D;&#x52A1;&#xFF09;
-<span class="hljs-keyword">if</span> intercept == <span class="hljs-built_in">local</span>_ip <span class="hljs-keyword">then</span>
-        ngx.exec(<span class="hljs-string">&quot;@new&quot;</span>)
-        <span class="hljs-built_in">return</span>
-end
-//&#x5982;&#x679C;&#x4E0D;&#x5B58;&#x5728;&#xFF0C;&#x5219;&#x8F6C;&#x53D1;&#x5230;@old&#x5BF9;&#x5E94;&#x7684;&#x670D;&#x52A1;&#x5668;&#xFF08;&#x4F20;&#x7EDF;&#x670D;&#x52A1;&#xFF09;
-ngx.exec(<span class="hljs-string">&quot;@old&quot;</span>)
-//&#x5173;&#x95ED;&#x5BA2;&#x6237;&#x7AEF;
-<span class="hljs-built_in">local</span> ok, err = cache:close()
-<span class="hljs-keyword">if</span> not ok <span class="hljs-keyword">then</span>
-    ngx.say(<span class="hljs-string">&quot;failed to close:&quot;</span>, err)
-    <span class="hljs-built_in">return</span>
-end
-</code></pre>
-<p>1&#xFF1A;redis&#x96C6;&#x7FA4;&#x8981;&#x914D;&#x7F6E;&#x591A;ip&#xFF0C;&#x9632;&#x6B62;&#x5B95;&#x673A;&#x95EE;&#x9898; 2&#xFF1A;&#x94FE;&#x63A5;&#x95EE;&#x9898;&#xFF0C;&#x5982;&#x679C;&#x6709;&#x7EBF;&#x7A0B;&#x6C60;&#x6700;&#x597D;&#x4E86;</p>
 
                                 
                                 </section>
@@ -440,7 +358,7 @@ end
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"灰度发布","level":"1.2","depth":1,"previous":{"title":"简介","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"linux/GrayReleased.md","mtime":"2021-01-29T04:27:52.162Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-01-29T04:40:45.506Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"灰度发布","level":"1.2","depth":1,"previous":{"title":"简介","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"linux/GrayReleased.md","mtime":"2021-02-01T09:02:38.118Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-02-01T09:03:46.162Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>
