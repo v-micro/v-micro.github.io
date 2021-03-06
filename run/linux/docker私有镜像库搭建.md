@@ -83,12 +83,15 @@ git push https://10.11.4.39:5001/nginx
 ```
 //利用docker创建密码
 docker run --entrypoint htpasswd registry:latest -Bbn caihui 123456 >/home/htpasswd
+
 //查看账号密码
 cat htpasswd
 zxg:$2y$05$qCY7iWVJIoOrnIp17WQOf.fcXUTo5xm4DwP3a/8ggzZlEZ3bsnonm
+
 //启动带参数的镜像库
 docker run -d -p 5000:5000 --restart=always --name registryauth -v /opt/registry:/var/lib/registry -v /auth:/auth -e "REGISTRY_AUTH=htpasswd" -e REGISTRY_AUTH_HTPASSWD_REALM="Registry Realm" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd registry:latest 
 
 //设置密码后需要先登录在提交镜像
 docker login 10.11.4.39:5001:5000
 ```
+
