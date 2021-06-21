@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://v-micro.github.io</id>
     <title>蔡小辉</title>
-    <updated>2021-06-21T03:18:14.386Z</updated>
+    <updated>2021-06-21T03:56:31.038Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://v-micro.github.io"/>
     <link rel="self" href="https://v-micro.github.io/atom.xml"/>
@@ -11,7 +11,63 @@
     <icon>https://v-micro.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, 蔡小辉</rights>
     <entry>
-        <title type="html"><![CDATA[快速构建]]></title>
+        <title type="html"><![CDATA[链路追踪]]></title>
+        <id>https://v-micro.github.io/post/lian-lu-zhui-zong/</id>
+        <link href="https://v-micro.github.io/post/lian-lu-zhui-zong/">
+        </link>
+        <updated>2021-06-21T03:54:35.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[灰度发布]]></title>
+        <id>https://v-micro.github.io/post/hui-du-fa-bu/</id>
+        <link href="https://v-micro.github.io/post/hui-du-fa-bu/">
+        </link>
+        <updated>2021-06-21T03:53:10.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[搭建日志系统EFK]]></title>
+        <id>https://v-micro.github.io/post/da-jian-ri-zhi-xi-tong-efk/</id>
+        <link href="https://v-micro.github.io/post/da-jian-ri-zhi-xi-tong-efk/">
+        </link>
+        <updated>2021-06-21T03:52:27.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[rabbitmq使用]]></title>
+        <id>https://v-micro.github.io/post/rabbitmq-shi-yong/</id>
+        <link href="https://v-micro.github.io/post/rabbitmq-shi-yong/">
+        </link>
+        <updated>2021-06-21T03:49:26.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[kubernetes集群搭建]]></title>
+        <id>https://v-micro.github.io/post/kubernetes-ji-qun-da-jian/</id>
+        <link href="https://v-micro.github.io/post/kubernetes-ji-qun-da-jian/">
+        </link>
+        <updated>2021-06-21T03:47:33.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[go-websocket]]></title>
+        <id>https://v-micro.github.io/post/go-websocket/</id>
+        <link href="https://v-micro.github.io/post/go-websocket/">
+        </link>
+        <updated>2021-06-21T03:46:14.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Elasticsearch使用]]></title>
+        <id>https://v-micro.github.io/post/elasticsearch-shi-yong/</id>
+        <link href="https://v-micro.github.io/post/elasticsearch-shi-yong/">
+        </link>
+        <updated>2021-06-21T03:41:55.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[docker私有镜像库搭建]]></title>
+        <id>https://v-micro.github.io/post/docker-si-you-jing-xiang-ku-da-jian/</id>
+        <link href="https://v-micro.github.io/post/docker-si-you-jing-xiang-ku-da-jian/">
+        </link>
+        <updated>2021-06-21T03:40:08.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[docker快速构建]]></title>
         <id>https://v-micro.github.io/post/kuai-su-gou-jian/</id>
         <link href="https://v-micro.github.io/post/kuai-su-gou-jian/">
         </link>
