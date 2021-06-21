@@ -9,7 +9,7 @@
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
 <title>rabbitmq使用 | 蔡小辉</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1624248640939">
+<link rel="shortcut icon" href="/favicon.ico?v=1624259744008">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -175,19 +175,19 @@
     <div class="sidebar-item-box">
       <a href="/archives/">
         
-        <span class="site-item-stat-count">9</span>
+        <span class="site-item-stat-count">11</span>
         <span class="site-item-stat-name language" data-lan="article">文章</span>
       </a>
     </div>
     <div class="sidebar-item-box">
       <a href="">
-        <span class="site-item-stat-count">4</span>
+        <span class="site-item-stat-count">5</span>
         <span class="site-item-stat-name language" data-lan="category">分类</span>
       </a>
     </div>
     <div class="sidebar-item-box">
       <a href="/tags/">
-        <span class="site-item-stat-count">4</span>
+        <span class="site-item-stat-count">5</span>
         <span class="site-item-stat-name language" data-lan="tag">标签</span>
       </a>
     </div>
@@ -1647,6 +1647,243 @@ for d := range messages{
       <hr>
     </div>
     <div class="result" id="result">
+      
+      <div class="item">
+        <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/ngrok-da-jian/"" data-c="
+          &lt;p&gt;ngrok 是一个反向代理，通过在公共的端点和本地运行的 Web 服务器之间建立一个安全的通道。ngrok 可捕获和分析所有通道上的流量，便于后期分析和重放。&lt;/p&gt;
+&lt;p&gt;开始安装&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;下载go的软件包
+wget http://www.golangtc.com/static/go/1.4.2/go1.4.2.linux-386.tar.gz
+
+进行解压
+tar -zxvf go1.4.2.linux-386.tar.gz
+mv go /usr/local/
+
+go的命令需要做软连接到/usr/bin
+ln -s /usr/local/go/bin/* /usr/bin/
+
+编译ngrok
+cd /usr/local/
+git clone https://github.com/inconshreveable/ngrok.git
+export GOPATH=/usr/local/ngrok/
+export NGROK_DOMAIN=&amp;quot;ngrok.volist.cn&amp;quot;
+cd ngrok
+
+为域名生成证书
+openssl genrsa -out rootCA.key 2048
+openssl req -x509 -new -nodes -key rootCA.key -subj &amp;quot;/CN=$NGROK_DOMAIN&amp;quot; -days 5000 -out rootCA.pem
+openssl genrsa -out server.key 2048
+openssl req -new -key server.key -subj &amp;quot;/CN=$NGROK_DOMAIN&amp;quot; -out server.csr
+openssl x509 -req -in server.csr -CA rootCA.pem -CAkey rootCA.key -CAcreateserial -out server.crt -days 5000
+
+在软件源代码目录下面会生成一些证书文件，我们需要把这些文件拷贝到指定位置
+cp rootCA.pem assets/client/tls/ngrokroot.crt
+cp server.crt assets/server/tls/snakeoil.crt
+cp server.key assets/server/tls/snakeoil.key
+
+如果是在天朝的服务器需要改，香港或者国外的服务器不需要
+vim src/ngrok/log/logger.go
+log &amp;quot;github.com/keepeye/log4go&amp;quot;
+
+指定编译环境变量，如何确认GOOS和GOARCH，可以通过go env来查看
+出现GOROOT_BOOTSTRAP变量设置问题用下面解决
+重点：export GOROOT_BOOTSTRAP=/usr/local/go1.4
+
+编译服务端
+cd /usr/local/go/src
+GOOS=linux GOARCH=amd64 ./make.bash
+cd /usr/local/ngrok/
+GOOS=linux GOARCH=amd64 make release-server
+
+编译客户端，mac os 64位操作系统
+cd /usr/local/go/src
+GOOS=darwin GOARCH=amd64 ./make.bash
+cd /usr/local/ngrok/
+GOOS=darwin GOARCH=amd64 make release-client
+
+Windows的客户端编译
+cd /usr/local/go/src
+GOOS=windows GOARCH=amd64 ./make.bash
+cd /usr/local/ngrok/
+GOOS=windows GOARCH=amd64 make release-client
+
+
+服务端启动
+/usr/local/ngrok/bin/ngrokd -domain=&amp;quot;$NGROK_DOMAIN&amp;quot; -httpAddr=&amp;quot;:80&amp;quot;
+
+客户端配置文件
+创建ngrok.cfg 内容如下
+server_addr: &amp;quot;ngrok.volist.cn:4443&amp;quot;
+trust_host_root_certs: false
+创建ngrok.bat启动文件 内容如下
+ngrok.exe -config=ngrok.cfg -subdomain=blog 127.0.0.99:8082
+此时客户端目录为
+![](https://v-micro.github.io/post-images/1624259736221.png)
+
+启动成功后的界面
+![](https://v-micro.github.io/post-images/1624259679849.png)
+
+&lt;/code&gt;&lt;/pre&gt;
+">ngrok搭建</a>
+      </div>
+      
+      <div class="item">
+        <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/git/"" data-c="
+          &lt;p&gt;Git 是一个开源的分布式版本控制系统，用于敏捷高效地处理任何或小或大的项目。&lt;/p&gt;
+&lt;p&gt;git基本操作&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;feature branch：功能分支
+release branch：预发布分支
+hotfix branch：bug修复分支
+
+git diff 608e120 4abe32e --name-only		两个版本的差异文件
+
+git log &amp;lt;file&amp;gt; 文件提交日志
+git checkout &amp;lt;commitID&amp;gt; &amp;lt;filename&amp;gt;		回滚到指定id
+
+gogs 集成工具
+
+git 日常协作
+
+git fetch origin 远程分支名x:本地分支名x
+
+添加远程仓库
+git remote add origin git@github.com:michaelliao/learngit.git
+
+开发人员
+git clone  xxxxxxxxxxxxxx		拉取代码
+git checkout develop	 		切换主分支
+git checkout -b feature-discuss		分出一个功能性分支
+touch discuss.js     			# 假装discuss.js就是我们要开发的功能
+git add . 
+git commit -m &#39;提交功能&#39;     # 提交更改
+git checkout develop     # 回到develop分支
+git merge --no-ff feature-discuss     # 把做好的功能合并到develop中 
+git branch -d feature-discuss	 # 删除功能性分支
+git push origin develop     # 把develop提交到自己的远程仓库中 
+
+项目管理人员
+git checkout develop
+git checkout -b livoras-develop		
+git pull https://github.com/livoras/git-demo.git develop
+git checkout develop
+git merge --no-ff livoras-develop
+git push origin develop 
+
+开发中解决bug
+git stash 				#储存现场工作
+git checkout master		#切换需要解决bug 的bug 分支
+git checkout -b issue-101		#创建bug 分支
+git add readme.txt
+git commit -m &amp;quot;fix bug 101&amp;quot;
+git checkout master
+git merge --no-ff -m &amp;quot;merged bug fix 101&amp;quot; issue-101
+git branch -d issue-101  删除bug分支
+git checkout dev	切换开发分支	
+git status		查看工作区
+git stash list		查看暂存区域
+git stash pop		恢复暂存并删除暂存
+
+git 技巧
+合并分支个别文件
+git checkout dijie_bug &amp;lt;path&amp;gt;		// 分支dijie_bug 文件强行更新到当前分支
+注：避免强制覆盖
+git checkout -b dijie_bug_temp	//创建bug 临时分支
+git merge dijie_bug	//合并bug 分支
+git checkout dijie_v6	//切换当前开发分支
+git checkout dijie_bug_temp  &amp;lt;path&amp;gt;	强制更新当前分支
+
+
+git 机器配置
+git config --list
+
+git config --global user.name &amp;quot;cai hui&amp;quot;
+git config --global user.email &amp;quot;1156949976@qq.com&amp;quot;
+
+服务器避免每回输入密码
+git config --global credential.helper store
+
+//拉去git 链接 最新的3个提交记录
+git clone &amp;lt;git地址&amp;gt; &amp;lt;命名&amp;gt; --depth=3
+
+//git 标签作用
+git tag -a v1.4 -m &#39;my version 1.4&#39;	//git 打标签
+git tag -l &#39;1.8*&#39;	//模糊查询标签
+
+============================================================
+子模块的应用
+第一次clone带子模块的项目
+shell script
+git clone --recurse-submodules url
+
+如果第一次没有clone子模块，下载完成后，但是子模块并没有下载下来，使用下面的命令
+shell script
+git submodule update --init --recursive
+
+过了一段时间，子模块更新了，需要重新更新子模块，一个命令解决
+shell script
+git submodule foreach git pull origin master
+
+子模块更新
+shell script
+git submodule update --remote
+
+更新所有子模块
+shell script
+git submodule foreach git submodule update
+
+如果已经克隆了项目并忘记了 ，则可以通过运行 来组合 和 步骤。为了还可以初始化、提取和签出任何嵌套子模块，可以使用万无一失的子模块。
+shell script
+--recurse-submodules git submodule init git submodule updategit submodule update --initgit submodule update --init --recursive
+
+为没有子模块的项目，添加子模块
+shell script
+git submodule add http://10.1.1.243/s2b2c/proto.git
+
+如果项目报错，提示 &#39;proto&#39; already exists in the index，说明proto属于该项目的子目录，需要移除
+shell script
+git rm -r --cached proto
+
+============================================================
+git 服务器搭建
+
+mkdir -p /home/www/project.git
+chmod 777 /home/www
+cd /home/www/project.git
+git init --bare             //创建一个裸仓库
+
+//因为需要执行shell,把shell指定成/usr/bin/git-shell 或/sbin/nogin 无法使用git hooks来更新blog
+useradd -s /bin/bash git  
+
+chown git:git -R /home/www/project.git
+
+// 创建用户登录权限
+mkdir -p /home/git/.ssh
+vim /home/git/.ssh/authorized_keys  //把上面复制的key粘贴进去，后保存退出
+chown git:git -R /home/git/.ssh
+chmod 600 /home/git/.ssh/authorized_keys //权限不要出错
+chmod 755 /home/git/vim.ssh
+
+//拉取代码
+git clone ssh://git@211.149.210.31:22000/home/www/project.git
+
+
+============================================================
+//添加hooks
+cd /home/www/project.git/hooks
+vim post-receive
+注：注意git 的权限
+以下为脚本
+#!/bin/sh
+PATH=$PATH:/usr/local/python27/bin
+GIT_WORK_TREE=/home/www/newproject git checkout -f
+cd /home/www/newproject &amp;amp;&amp;amp; make html &amp;gt;/dev/null 2&amp;gt;&amp;amp;1
+chmod +x post-receive
+chown git:git -R /home/www/newproject 
+
+
+&lt;/code&gt;&lt;/pre&gt;
+">Git</a>
+      </div>
       
       <div class="item">
         <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/lian-lu-zhui-zong/"" data-c="
