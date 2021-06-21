@@ -9,7 +9,7 @@
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
 <title>蔡小辉</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1624245263327">
+<link rel="shortcut icon" href="/favicon.ico?v=1624245484854">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -965,9 +965,70 @@
     <div class="result" id="result">
       
       <div class="item">
-        <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/ce-shi/"" data-c="
-          &lt;p&gt;asdas&lt;/p&gt;
-">测试</a>
+        <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/kuai-su-gou-jian/"" data-c="
+          &lt;p&gt;快速构建redis&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//下载docker镜像
+docker pull redis
+//启动redis 并设置密码为123456
+docker run -d --name myredis -p 6379:6379 redis --requirepass &amp;quot;123456&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;快速构建mysql&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//下载mysql 5.7
+docker pull mysql:5.7 
+//运行mysql镜像
+docker run -p 52313:3306 --name mysql -e MYSQL_ROOT_PASSWORD=helloworidphp -d mysql:5.7
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;快速构建rabbitmq&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//下载rabbitmq  management带访问界面
+docker pull rabbitmq:management
+//运行镜像
+docker run -d --privileged=true --name my_rabbitmq -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=admin -p 15672:15672 -p 5672:5672 rabbitmq:management
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;快速构建nginx&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//下载镜像
+docker pull nginx
+//运行镜像
+docker run -d -p 81:80 --name some-nginx81 some-content-nginx
+//拷贝静态资源文件到镜像
+docker cp index.html a4274a5e3589:/usr/share/nginx/html/index.html
+
+//配置文件本地
+docker run --name nginx -p 80:80 -v /home/docker-nginx/nginx.conf:/etc/nginx/nginx.conf -v /home/docker-nginx/log:/var/log/nginx -v /home/docker-nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf -d nginx
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;快速构建registry私有库&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//下载镜像包
+docker pull registry:latest
+
+//运行镜像并配置宿主机镜像位置
+//镜像存储目录/opt/data/registry
+docker run -d --name=MyRegistry -p 5001:5000 -v /opt/data/registry:/tmp/registry registry:latest
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;快速构建elasticsearch&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//下载镜像
+docker pull elasticsearch:7.10.1
+//运行镜像
+docker run -d -p 9200:9200 -p 9300:9300 --privileged=true -e &amp;quot;discovery.type=single-node&amp;quot; --name MyElasticsearch elasticsearch:7.10.1
+//端口解释
+# 9200 主要用于外部 http通讯
+# 9300 作为tcp协议 es集群就是通过9300通讯
+//报错解决
+-e &amp;quot;ES_JAVA_OPTS=-Xms64m -Xmx251m&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;快速构建kibana&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//下载镜像
+docker pull kibana:7.10.1
+//运行镜像
+docker run -d -p 5601:5601 --net=host --name MyKibana kibana:7.10.1
+//运行kibana 并连接es
+docker run -d -p 5601:5601 --net=host --name MyKibana -e ELASTICSEARCH_URL=http://127.0.0.1:9200 kibana:7.10.1
+//如法加载则
+修改镜像配置然后重启
+//配置
+vim  /usr/share/kibana/config/kibana.yml
+elasticsearch.hosts: [ &amp;quot;http://127.0.0.1:9200&amp;quot; ]     es 端口
+i18n.locale: &amp;quot;zh-CN&amp;quot;    //设置中文
+&lt;/code&gt;&lt;/pre&gt;
+">快速构建</a>
       </div>
       
     </div>
