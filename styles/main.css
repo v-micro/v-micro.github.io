@@ -2175,7 +2175,13 @@ body {
     }
     .mist .site-title i {
       background: #FFFFFFfe;
-    }.box-shadow-wrapper {
+    }.footer {
+	min-height: 50px;
+	text-align: center;
+	font-size: 14px;
+	color: #999;
+	display: none !important;
+}.box-shadow-wrapper {
       box-shadow: none !important;
     }body {
       cursor: default;
