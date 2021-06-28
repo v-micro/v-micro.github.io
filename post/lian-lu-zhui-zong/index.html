@@ -9,7 +9,7 @@
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
 <title>链路追踪 | 蔡小辉</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1624261903281">
+<link rel="shortcut icon" href="/favicon.ico?v=1624870882976">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -186,7 +186,7 @@
     <div class="sidebar-item-box">
       <a href="/archives/">
         
-        <span class="site-item-stat-count">11</span>
+        <span class="site-item-stat-count">12</span>
         <span class="site-item-stat-name language" data-lan="article">文章</span>
       </a>
     </div>
@@ -1531,6 +1531,364 @@ func main()  {
       <hr>
     </div>
     <div class="result" id="result">
+      
+      <div class="item">
+        <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/jia-mi-suan-fa-zong-jie/"" data-c="
+          &lt;p&gt;加密解密在实际开发中应用比较广泛，常用加解密分为：“对称式”、“非对称式”和”数字签名“。&lt;/p&gt;
+&lt;p&gt;对称式：对称加密(也叫私钥加密)指加密和解密使用相同密钥的加密算法。具体算法主要有DES算法，3DES算法，TDEA算法，Blowfish算法，RC5算法，IDEA算法。&lt;/p&gt;
+&lt;p&gt;非对称加密(公钥加密)：指加密和解密使用不同密钥的加密算法，也称为公私钥加密。具体算法主要有RSA、Elgamal、背包算法、Rabin、D-H、ECC（椭圆曲线加密算法）。&lt;/p&gt;
+&lt;p&gt;数字签名：数字签名是非对称密钥加密技术与数字摘要技术的应用。主要算法有md5、hmac、sha1等。&lt;/p&gt;
+&lt;h2 id=&#34;md5加密&#34;&gt;MD5加密&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;h := md5.New()
+h.Write([]byte(s))
+return hex.EncodeToString(h.Sum(nil))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;hmac加密&#34;&gt;hmac加密&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;//key随意设置 data 要加密数据
+func Hmac(key, data string) string {
+	hash:= hmac.New(md5.New, []byte(key)) // 创建对应的md5哈希加密算法
+	hash.Write([]byte(data))
+	return hex.EncodeToString(hash.Sum([]byte(&amp;quot;&amp;quot;)))
+}
+func HmacSha256(key, data string) string {
+	hash:= hmac.New(sha256.New, []byte(key)) //创建对应的sha256哈希加密算法
+	hash.Write([]byte(data))
+	return hex.EncodeToString(hash.Sum([]byte(&amp;quot;&amp;quot;)))
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;sha1&#34;&gt;sha1&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;func Sha1(data string) string {
+	sha1 := sha1.New()
+	sha1.Write([]byte(data))
+	return hex.EncodeToString(sha1.Sum([]byte(&amp;quot;&amp;quot;)))
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;aes&#34;&gt;AES&lt;/h2&gt;
+&lt;p&gt;AES 的五种加密模式&lt;br&gt;
+电码本模式（Electronic Codebook Book (ECB)）&lt;br&gt;
+密码分组链接模式（Cipher Block Chaining (CBC)）&lt;br&gt;
+计算器模式（Counter (CTR)）&lt;br&gt;
+密码反馈模式（Cipher FeedBack (CFB)）&lt;br&gt;
+输出反馈模式（Output FeedBack (OFB)）&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# ECB 加密方式
+func AESEncrypt(src []byte, key []byte) (encrypted []byte) {
+	cipher, _ := aes.NewCipher(generateKey(key))
+	length := (len(src) + aes.BlockSize) / aes.BlockSize
+	plain := make([]byte, length*aes.BlockSize)
+	copy(plain, src)
+	pad := byte(len(plain) - len(src))
+	for i := len(src); i &amp;lt; len(plain); i++ {
+		plain[i] = pad
+	}
+	encrypted = make([]byte, len(plain))
+	// 分组分块加密
+	for bs, be := 0, cipher.BlockSize(); bs &amp;lt;= len(src); bs, be = bs+cipher.BlockSize(), be+cipher.BlockSize() {
+		cipher.Encrypt(encrypted[bs:be], plain[bs:be])
+	}
+
+	return encrypted
+}
+
+func AESDecrypt(encrypted []byte, key []byte) (decrypted []byte) {
+	cipher, _ := aes.NewCipher(generateKey(key))
+	decrypted = make([]byte, len(encrypted))
+	//
+	for bs, be := 0, cipher.BlockSize(); bs &amp;lt; len(encrypted); bs, be = bs+cipher.BlockSize(), be+cipher.BlockSize() {
+		cipher.Decrypt(decrypted[bs:be], encrypted[bs:be])
+	}
+
+	trim := 0
+	if len(decrypted) &amp;gt; 0 {
+		trim = len(decrypted) - int(decrypted[len(decrypted)-1])
+	}
+
+	return decrypted[:trim]
+}
+
+func generateKey(key []byte) (genKey []byte) {
+	genKey = make([]byte, 16)
+	copy(genKey, key)
+	for i := 16; i &amp;lt; len(key); {
+		for j := 0; j &amp;lt; 16 &amp;amp;&amp;amp; i &amp;lt; len(key); j, i = j+1, i+1 {
+			genKey[j] ^= key[i]
+		}
+	}
+	return genKey
+}
+func main()  {
+	source:=&amp;quot;hello world&amp;quot;
+	fmt.Println(&amp;quot;原字符：&amp;quot;,source)
+	//16byte密钥
+	key:=&amp;quot;1443flfsaWfdas&amp;quot;
+	encryptCode:=AESEncrypt([]byte(source),[]byte(key))
+	fmt.Println(&amp;quot;密文：&amp;quot;,string(encryptCode))
+	decryptCode:=AESDecrypt(encryptCode,[]byte(key))
+	fmt.Println(&amp;quot;解密：&amp;quot;,string(decryptCode))
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;# CBC 加密方式
+func main() {
+    orig := &amp;quot;hello world&amp;quot;
+    key := &amp;quot;0123456789012345&amp;quot;
+    fmt.Println(&amp;quot;原文：&amp;quot;, orig)
+    encryptCode := AesEncrypt(orig, key)
+    fmt.Println(&amp;quot;密文：&amp;quot; , encryptCode)
+    decryptCode := AesDecrypt(encryptCode, key)
+    fmt.Println(&amp;quot;解密结果：&amp;quot;, decryptCode)
+}
+func AesEncrypt(orig string, key string) string {
+    // 转成字节数组
+    origData := []byte(orig)
+    k := []byte(key)
+    // 分组秘钥
+    // NewCipher该函数限制了输入k的长度必须为16, 24或者32
+    block, _ := aes.NewCipher(k)
+    // 获取秘钥块的长度
+    blockSize := block.BlockSize()
+    // 补全码
+    origData = PKCS7Padding(origData, blockSize)
+    // 加密模式
+    blockMode := cipher.NewCBCEncrypter(block, k[:blockSize])
+    // 创建数组
+    cryted := make([]byte, len(origData))
+    // 加密
+    blockMode.CryptBlocks(cryted, origData)
+    return base64.StdEncoding.EncodeToString(cryted)
+}
+func AesDecrypt(cryted string, key string) string {
+    // 转成字节数组
+    crytedByte, _ := base64.StdEncoding.DecodeString(cryted)
+    k := []byte(key)
+    // 分组秘钥
+    block, _ := aes.NewCipher(k)
+    // 获取秘钥块的长度
+    blockSize := block.BlockSize()
+    // 加密模式
+    blockMode := cipher.NewCBCDecrypter(block, k[:blockSize])
+    // 创建数组
+    orig := make([]byte, len(crytedByte))
+    // 解密
+    blockMode.CryptBlocks(orig, crytedByte)
+    // 去补全码
+    orig = PKCS7UnPadding(orig)
+    return string(orig)
+}
+//补码
+//AES加密数据块分组长度必须为128bit(byte[16])，密钥长度可以是128bit(byte[16])、192bit(byte[24])、256bit(byte[32])中的任意一个。
+func PKCS7Padding(ciphertext []byte, blocksize int) []byte {
+    padding := blocksize - len(ciphertext)%blocksize
+    padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+    return append(ciphertext, padtext...)
+}
+//去码
+func PKCS7UnPadding(origData []byte) []byte {
+    length := len(origData)
+    unpadding := int(origData[length-1])
+    return origData[:(length - unpadding)]
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;#CRT 加密方式
+//加密
+func aesCtrCrypt(plainText []byte, key []byte) ([]byte, error) {
+
+	//1. 创建cipher.Block接口
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	//2. 创建分组模式，在crypto/cipher包中
+	iv := bytes.Repeat([]byte(&amp;quot;1&amp;quot;), block.BlockSize())
+	stream := cipher.NewCTR(block, iv)
+	//3. 加密
+	dst := make([]byte, len(plainText))
+	stream.XORKeyStream(dst, plainText)
+
+	return dst, nil
+}
+
+
+func main() {
+	source:=&amp;quot;hello world&amp;quot;
+	fmt.Println(&amp;quot;原字符：&amp;quot;,source)
+
+	key:=&amp;quot;1443flfsaWfdasds&amp;quot;
+	encryptCode,_:=aesCtrCrypt([]byte(source),[]byte(key))
+	fmt.Println(&amp;quot;密文：&amp;quot;,string(encryptCode))
+
+	decryptCode,_:=aesCtrCrypt(encryptCode,[]byte(key))
+
+	fmt.Println(&amp;quot;解密：&amp;quot;,string(decryptCode))
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;#CFB 加密方式
+func AesEncryptCFB(origData []byte, key []byte) (encrypted []byte) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		//panic(err)
+	}
+	encrypted = make([]byte, aes.BlockSize+len(origData))
+	iv := encrypted[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		//panic(err)
+	}
+	stream := cipher.NewCFBEncrypter(block, iv)
+	stream.XORKeyStream(encrypted[aes.BlockSize:], origData)
+	return encrypted
+}
+func AesDecryptCFB(encrypted []byte, key []byte) (decrypted []byte) {
+	block, _ := aes.NewCipher(key)
+	if len(encrypted) &amp;lt; aes.BlockSize {
+		panic(&amp;quot;ciphertext too short&amp;quot;)
+	}
+	iv := encrypted[:aes.BlockSize]
+	encrypted = encrypted[aes.BlockSize:]
+
+	stream := cipher.NewCFBDecrypter(block, iv)
+	stream.XORKeyStream(encrypted, encrypted)
+	return encrypted
+}
+func main() {
+	source:=&amp;quot;hello world&amp;quot;
+	fmt.Println(&amp;quot;原字符：&amp;quot;,source)
+	key:=&amp;quot;ABCDEFGHIJKLMNO1&amp;quot;//16位
+	encryptCode:=AesEncryptCFB([]byte(source),[]byte(key))
+	fmt.Println(&amp;quot;密文：&amp;quot;,hex.EncodeToString(encryptCode))
+	decryptCode:=AesDecryptCFB(encryptCode,[]byte(key))
+
+	fmt.Println(&amp;quot;解密：&amp;quot;,string(decryptCode))
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;#OFB 加密方式
+func aesEncryptOFB( data[]byte,key []byte) ([]byte, error) {
+	data = PKCS7Padding(data, aes.BlockSize)
+	block, _ := aes.NewCipher([]byte(key))
+	out := make([]byte, aes.BlockSize + len(data))
+	iv := out[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return nil, err
+	}
+
+	stream := cipher.NewOFB(block, iv)
+	stream.XORKeyStream(out[aes.BlockSize:], data)
+	return out, nil
+}
+
+func aesDecryptOFB( data[]byte,key []byte) ([]byte, error) {
+	block, _ := aes.NewCipher([]byte(key))
+	iv  := data[:aes.BlockSize]
+	data = data[aes.BlockSize:]
+	if len(data) % aes.BlockSize != 0 {
+		return nil, fmt.Errorf(&amp;quot;data is not a multiple of the block size&amp;quot;)
+	}
+
+	out := make([]byte, len(data))
+	mode := cipher.NewOFB(block, iv)
+	mode.XORKeyStream(out, data)
+
+	out= PKCS7UnPadding(out)
+	return out, nil
+}
+//补码
+//AES加密数据块分组长度必须为128bit(byte[16])，密钥长度可以是128bit(byte[16])、192bit(byte[24])、256bit(byte[32])中的任意一个。
+func PKCS7Padding(ciphertext []byte, blocksize int) []byte {
+	padding := blocksize - len(ciphertext)%blocksize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(ciphertext, padtext...)
+}
+//去码
+func PKCS7UnPadding(origData []byte) []byte {
+	length := len(origData)
+	unpadding := int(origData[length-1])
+	return origData[:(length - unpadding)]
+}
+func main() {
+	source:=&amp;quot;hello world&amp;quot;
+	fmt.Println(&amp;quot;原字符：&amp;quot;,source)
+	key:=&amp;quot;1111111111111111&amp;quot;//16位  32位均可
+	encryptCode,_:=aesEncryptOFB([]byte(source),[]byte(key))
+	fmt.Println(&amp;quot;密文：&amp;quot;,hex.EncodeToString(encryptCode))
+	decryptCode,_:=aesDecryptOFB(encryptCode,[]byte(key))
+
+	fmt.Println(&amp;quot;解密：&amp;quot;,string(decryptCode))
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;rsa加密&#34;&gt;RSA加密&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;# 私钥生成 
+# openssl genrsa -out rsa_private_key.pem 1024
+
+# 公钥: 根据私钥生成
+# openssl rsa -in rsa_private_key.pem -pubout -out rsa_public_key.pem
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;代码处理&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;var privateKey = []byte(`
+-----BEGIN RSA PRIVATE KEY-----
+MIICWwIBAAKBgQDcGsUIIAINHfRTdMmgGwLrjzfMNSrtgIf4EGsNaYwmC1GjF/bM
+h0Mcm10oLhNrKNYCTTQVGGIxuc5heKd1gOzb7bdTnCDPPZ7oV7p1B9Pud+6zPaco
+qDz2M24vHFWYY2FbIIJh8fHhKcfXNXOLovdVBE7Zy682X1+R1lRK8D+vmQIDAQAB
+AoGAeWAZvz1HZExca5k/hpbeqV+0+VtobMgwMs96+U53BpO/VRzl8Cu3CpNyb7HY
+64L9YQ+J5QgpPhqkgIO0dMu/0RIXsmhvr2gcxmKObcqT3JQ6S4rjHTln49I2sYTz
+7JEH4TcplKjSjHyq5MhHfA+CV2/AB2BO6G8limu7SheXuvECQQDwOpZrZDeTOOBk
+z1vercawd+J9ll/FZYttnrWYTI1sSF1sNfZ7dUXPyYPQFZ0LQ1bhZGmWBZ6a6wd9
+R+PKlmJvAkEA6o32c/WEXxW2zeh18sOO4wqUiBYq3L3hFObhcsUAY8jfykQefW8q
+yPuuL02jLIajFWd0itjvIrzWnVmoUuXydwJAXGLrvllIVkIlah+lATprkypH3Gyc
+YFnxCTNkOzIVoXMjGp6WMFylgIfLPZdSUiaPnxby1FNM7987fh7Lp/m12QJAK9iL
+2JNtwkSR3p305oOuAz0oFORn8MnB+KFMRaMT9pNHWk0vke0lB1sc7ZTKyvkEJW0o
+eQgic9DvIYzwDUcU8wJAIkKROzuzLi9AvLnLUrSdI6998lmeYO9x7pwZPukz3era
+zncjRK3pbVkv0KrKfczuJiRlZ7dUzVO0b6QJr8TRAA==
+-----END RSA PRIVATE KEY-----
+`)
+
+var publicKey = []byte(`
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDcGsUIIAINHfRTdMmgGwLrjzfM
+NSrtgIf4EGsNaYwmC1GjF/bMh0Mcm10oLhNrKNYCTTQVGGIxuc5heKd1gOzb7bdT
+nCDPPZ7oV7p1B9Pud+6zPacoqDz2M24vHFWYY2FbIIJh8fHhKcfXNXOLovdVBE7Z
+y682X1+R1lRK8D+vmQIDAQAB
+-----END PUBLIC KEY-----
+`)
+
+// 加密
+func RsaEncrypt(origData []byte) ([]byte, error) {
+	//解密pem格式的公钥
+	block, _ := pem.Decode(publicKey)
+	if block == nil {
+		return nil, errors.New(&amp;quot;public key error&amp;quot;)
+	}
+	// 解析公钥
+	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	// 类型断言
+	pub := pubInterface.(*rsa.PublicKey)
+	//加密
+	return rsa.EncryptPKCS1v15(rand.Reader, pub, origData)
+}
+
+// 解密
+func RsaDecrypt(ciphertext []byte) ([]byte, error) {
+	//解密
+	block, _ := pem.Decode(privateKey)
+	if block == nil {
+		return nil, errors.New(&amp;quot;private key error!&amp;quot;)
+	}
+	//解析PKCS1格式的私钥
+	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	// 解密
+	return rsa.DecryptPKCS1v15(rand.Reader, priv, ciphertext)
+}
+func main() {
+	data, _ := RsaEncrypt([]byte(&amp;quot;hello world&amp;quot;))
+	fmt.Println(base64.StdEncoding.EncodeToString(data))
+	origData, _ := RsaDecrypt(data)
+	fmt.Println(string(origData))
+}
+&lt;/code&gt;&lt;/pre&gt;
+">加密算法总结</a>
+      </div>
       
       <div class="item">
         <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/ngrok-da-jian/"" data-c="
