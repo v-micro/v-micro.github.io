@@ -8,7 +8,7 @@
 <meta name="keywords" content="吃的苦中苦，方能开路虎">
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
-<title>Git | 蔡小辉</title>
+<title>ios apns 推送（go 版本） | 蔡小辉</title>
 <link rel="shortcut icon" href="/favicon.ico?v=1624960240869">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
@@ -41,8 +41,8 @@
 
 
 
-  <meta name="description" content="Git" />
-  <meta name="keywords" content="git" />
+  <meta name="description" content="ios apns 推送（go 版本）" />
+  <meta name="keywords" content="" />
 </head>
 
 <body>
@@ -300,8 +300,8 @@
           <div class="section bg-color post post-page">
             <section class="post-header">
   <h1 class="post-title">
-    <a class="post-title-link" href="https://v-micro.github.io/post/git/">
-      Git
+    <a class="post-title-link" href="https://v-micro.github.io/post/ios-apns-tui-song-go-ban-ben/">
+      ios apns 推送（go 版本）
     </a>
   </h1>
   <div class="post-meta">
@@ -309,188 +309,80 @@
     <span class="meta-item pc-show">
       <i class="fa fa-calendar-o"></i>
       <span class="language" data-lan="publish">发布于</span>
-      <span class="publish-time" data-t="2021-06-21 14:38:16">2021-06-21</span>
+      <span class="publish-time" data-t="2021-06-29 17:46:12">2021-06-29</span>
       <span class="post-meta-divider pc-show">|</span>
     </span>
     
     <span class="meta-item">
-      <i class="fa fa-folder-o"></i>
-      <span class="pc-show language" data-lan="category-in">分类于</span>
-      
-      
-      <a href="https://v-micro.github.io/tag/b0O-yn2m0/">
-        <span>git</span>
-      </a>
-      
-      
-    </span>
-    <span class="post-meta-divider">|</span>
-    
-    <span class="meta-item">
       <i class="fa fa-clock-o"></i>
-      <span>5<span class="language" data-lan="minute">分钟</span></span>
+      <span>2<span class="language" data-lan="minute">分钟</span></span>
     </span>
     <span class="meta-item">
       <span class="post-meta-divider">|</span>
       <i class="fa fa-file-word-o"></i>
-      <span>1070<span class="pc-show language" data-lan="words">字数</span></span>
+      <span>290<span class="pc-show language" data-lan="words">字数</span></span>
     </span>
     
   </div>
 </section>
             <div class="post-body next-md-body" id="post_body">
-              <p>Git 是一个开源的分布式版本控制系统，用于敏捷高效地处理任何或小或大的项目。</p>
-<p>git基本操作</p>
-<pre><code>feature branch：功能分支
-release branch：预发布分支
-hotfix branch：bug修复分支
+              <p>整理了ios 推送。让我们开始进入代码的海洋吧！！</p>
+<pre><code>//安装第三方的包
+go get github.com/sideshow/apns2
 
-git diff 608e120 4abe32e --name-only		两个版本的差异文件
+//开始使用首先我们用 .p8形式来进行推送
+//设备标识
+deviceToken := flag.String(&quot;token&quot;, &quot;02189e8d2b87ffa2b5673a934d4e9274aaa399b79ca1328b9c2559ed7c828df5&quot;, &quot;token (Required)&quot;)
 
-git log &lt;file&gt; 文件提交日志
-git checkout &lt;commitID&gt; &lt;filename&gt;		回滚到指定id
+//p8文件
+authKeyPath := flag.String(&quot;authKey&quot;, &quot;./file/xxxxxx.p8&quot;, &quot;Path to .p8 APNSAuthKey file (Required)&quot;)、
+//topic 开发者后台寻找
+topic := flag.String(&quot;topic&quot;, &quot;topic&quot;, &quot;Topic (Required)&quot;)
+//app keyID
+keyID := flag.String(&quot;keyID&quot;, &quot;keyID&quot;, &quot;APNS KeyID (Required)&quot;)
+//app teamID
+teamID := flag.String(&quot;teamID&quot;, &quot;teamID&quot;, &quot;APNS TeamID (Required)&quot;)
+flag.Parse()
 
-gogs 集成工具
+if *authKeyPath == &quot;&quot; || *deviceToken == &quot;&quot; || *topic == &quot;&quot; || *keyID == &quot;&quot; || *teamID == &quot;&quot; {
+    ReturnJson(c,500,&quot;参数异常&quot;,gin.H{});
+    return
+}
+//读取key
+authKey, err := token.AuthKeyFromFile(*authKeyPath)
+if err != nil {
+    ReturnJson(c,500,err.Error(),gin.H{});
+    return
+}
+//推送内容
+notification := &amp;apns2.Notification{}
+notification.DeviceToken = *deviceToken
+notification.Topic = *topic
+notification.Payload = []byte(`{
+        &quot;aps&quot; : {
+            &quot;alert&quot; : &quot;江总，带我找成都小姐姐!&quot;
+        }
+    }
+`)
+client := apns2.NewTokenClient(&amp;token.Token{
+    AuthKey: authKey,
+    KeyID:   *keyID,
+    TeamID:  *teamID,
+})
+//沙盒环境
+client.Development()
+////线上环境
+//client.Production()
 
-git 日常协作
+res, err := client.Push(notification)
+if err != nil {
+    ReturnJson(c,500,err.Error(),gin.H{});
+    return
+}
 
-git fetch origin 远程分支名x:本地分支名x
+fmt.Printf(&quot;%v %v %v\n&quot;, res.StatusCode, res.ApnsID, res.Reason)
 
-添加远程仓库
-git remote add origin git@github.com:michaelliao/learngit.git
-
-开发人员
-git clone  xxxxxxxxxxxxxx		拉取代码
-git checkout develop	 		切换主分支
-git checkout -b feature-discuss		分出一个功能性分支
-touch discuss.js     			# 假装discuss.js就是我们要开发的功能
-git add . 
-git commit -m '提交功能'     # 提交更改
-git checkout develop     # 回到develop分支
-git merge --no-ff feature-discuss     # 把做好的功能合并到develop中 
-git branch -d feature-discuss	 # 删除功能性分支
-git push origin develop     # 把develop提交到自己的远程仓库中 
-
-项目管理人员
-git checkout develop
-git checkout -b livoras-develop		
-git pull https://github.com/livoras/git-demo.git develop
-git checkout develop
-git merge --no-ff livoras-develop
-git push origin develop 
-
-开发中解决bug
-git stash 				#储存现场工作
-git checkout master		#切换需要解决bug 的bug 分支
-git checkout -b issue-101		#创建bug 分支
-git add readme.txt
-git commit -m &quot;fix bug 101&quot;
-git checkout master
-git merge --no-ff -m &quot;merged bug fix 101&quot; issue-101
-git branch -d issue-101  删除bug分支
-git checkout dev	切换开发分支	
-git status		查看工作区
-git stash list		查看暂存区域
-git stash pop		恢复暂存并删除暂存
-
-git 技巧
-合并分支个别文件
-git checkout dijie_bug &lt;path&gt;		// 分支dijie_bug 文件强行更新到当前分支
-注：避免强制覆盖
-git checkout -b dijie_bug_temp	//创建bug 临时分支
-git merge dijie_bug	//合并bug 分支
-git checkout dijie_v6	//切换当前开发分支
-git checkout dijie_bug_temp  &lt;path&gt;	强制更新当前分支
-
-
-git 机器配置
-git config --list
-
-git config --global user.name &quot;cai hui&quot;
-git config --global user.email &quot;1156949976@qq.com&quot;
-
-服务器避免每回输入密码
-git config --global credential.helper store
-
-//拉去git 链接 最新的3个提交记录
-git clone &lt;git地址&gt; &lt;命名&gt; --depth=3
-
-//git 标签作用
-git tag -a v1.4 -m 'my version 1.4'	//git 打标签
-git tag -l '1.8*'	//模糊查询标签
-
-============================================================
-子模块的应用
-第一次clone带子模块的项目
-shell script
-git clone --recurse-submodules url
-
-如果第一次没有clone子模块，下载完成后，但是子模块并没有下载下来，使用下面的命令
-shell script
-git submodule update --init --recursive
-
-过了一段时间，子模块更新了，需要重新更新子模块，一个命令解决
-shell script
-git submodule foreach git pull origin master
-
-子模块更新
-shell script
-git submodule update --remote
-
-更新所有子模块
-shell script
-git submodule foreach git submodule update
-
-如果已经克隆了项目并忘记了 ，则可以通过运行 来组合 和 步骤。为了还可以初始化、提取和签出任何嵌套子模块，可以使用万无一失的子模块。
-shell script
---recurse-submodules git submodule init git submodule updategit submodule update --initgit submodule update --init --recursive
-
-为没有子模块的项目，添加子模块
-shell script
-git submodule add http://10.1.1.243/s2b2c/proto.git
-
-如果项目报错，提示 'proto' already exists in the index，说明proto属于该项目的子目录，需要移除
-shell script
-git rm -r --cached proto
-
-============================================================
-git 服务器搭建
-
-mkdir -p /home/www/project.git
-chmod 777 /home/www
-cd /home/www/project.git
-git init --bare             //创建一个裸仓库
-
-//因为需要执行shell,把shell指定成/usr/bin/git-shell 或/sbin/nogin 无法使用git hooks来更新blog
-useradd -s /bin/bash git  
-
-chown git:git -R /home/www/project.git
-
-// 创建用户登录权限
-mkdir -p /home/git/.ssh
-vim /home/git/.ssh/authorized_keys  //把上面复制的key粘贴进去，后保存退出
-chown git:git -R /home/git/.ssh
-chmod 600 /home/git/.ssh/authorized_keys //权限不要出错
-chmod 755 /home/git/vim.ssh
-
-//拉取代码
-git clone ssh://git@211.149.210.31:22000/home/www/project.git
-
-
-============================================================
-//添加hooks
-cd /home/www/project.git/hooks
-vim post-receive
-注：注意git 的权限
-以下为脚本
-#!/bin/sh
-PATH=$PATH:/usr/local/python27/bin
-GIT_WORK_TREE=/home/www/newproject git checkout -f
-cd /home/www/newproject &amp;&amp; make html &gt;/dev/null 2&gt;&amp;1
-chmod +x post-receive
-chown git:git -R /home/www/newproject 
-
-
+ReturnJson(c,200,&quot;推送成功&quot;,gin.H{})
 </code></pre>
 
             </div>
@@ -504,7 +396,7 @@ chown git:git -R /home/www/newproject
     </li>
     <li class="post-copyright-link">
       <strong class="language" data-lan="link">本文链接：</strong>
-      <a href="https://v-micro.github.io/post/git/" title="Git">https://v-micro.github.io/post/git/</a>
+      <a href="https://v-micro.github.io/post/ios-apns-tui-song-go-ban-ben/" title="ios apns 推送（go 版本）">https://v-micro.github.io/post/ios-apns-tui-song-go-ban-ben/</a>
     </li>
     <li class="post-copyright-license">
       <strong class="language" data-lan="copyright">版权声明： </strong>
@@ -513,21 +405,15 @@ chown git:git -R /home/www/newproject
   </ul>
   <div class="tags">
     
-      <a href="https://v-micro.github.io/tag/b0O-yn2m0/"># git</a>
-    
   </div>
   <div class="nav">
     <div class="nav-prev">
       
-        <i class="fa fa-chevron-left"></i>
-        <a class="nav-pc-next" title="ngrok搭建" href="https://v-micro.github.io/post/ngrok-da-jian/">ngrok搭建</a class="nav-pc-next">
-        <a class="nav-mobile-prev" title="ngrok搭建" href="https://v-micro.github.io/post/ngrok-da-jian/">上一篇</a>
-      
     </div>
     <div class="nav-next">
       
-        <a class="nav-pc-next" title="链路追踪" href="https://v-micro.github.io/post/lian-lu-zhui-zong/">链路追踪</a>
-        <a class="nav-mobile-next" title="链路追踪" href="https://v-micro.github.io/post/lian-lu-zhui-zong/">下一篇</a>
+        <a class="nav-pc-next" title="ios内购（go 版本）" href="https://v-micro.github.io/post/ios-nei-gou-go-ban-ben/">ios内购（go 版本）</a>
+        <a class="nav-mobile-next" title="ios内购（go 版本）" href="https://v-micro.github.io/post/ios-nei-gou-go-ban-ben/">下一篇</a>
         <i class="fa fa-chevron-right"></i>
       
     </div>
