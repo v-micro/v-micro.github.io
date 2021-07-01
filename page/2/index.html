@@ -9,7 +9,7 @@
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
 <title>蔡小辉</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1624961331019">
+<link rel="shortcut icon" href="/favicon.ico?v=1625125037004">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -1461,7 +1461,39 @@ ReturnJson(c,200,&amp;quot;推送成功&amp;quot;,gin.H{})
       
       <div class="item">
         <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/ios-nei-gou-go-ban-ben/"" data-c="
-          &lt;p&gt;项目中应用到ios内购。今天用go重新写了内购的代码。此处不牵扯业务逻辑，只写了核心的校验流程&lt;/p&gt;
+          &lt;h3 id=&#34;核心背景&#34;&gt;核心背景&lt;/h3&gt;
+&lt;p&gt;项目中应用到ios内购。今天用go重新写了内购的代码。此处不牵扯业务逻辑，只写了核心的校验流程&lt;/p&gt;
+&lt;p&gt;以上是苹果审核条例的内购说明要求，内购就是苹果为APP内购买虚拟商品或服务提供的一套交易系统。比如各类游戏的游戏币、网易云音乐开通黑胶VIP等等，都是需要走内购流程的，如果不走内购流程，审核是过不了的，即使通过后门设置，在审核期间避开审核人员测试，后期如果被发现，是有被下架的风险的；如果购买的是淘宝或者京东买衣服啊等等，就不需要走内购。&lt;/p&gt;
+&lt;h3 id=&#34;苹果购买中内购分为四种类型&#34;&gt;苹果购买中内购分为四种类型&lt;/h3&gt;
+&lt;p&gt;消耗型商品：&lt;br&gt;
+顾名思义, 可以消耗使用的商品, 比如游戏中的金币, 钻石等, 可以用来购买应用内虚拟物品的货币。&lt;/p&gt;
+&lt;p&gt;非消耗型商品：&lt;br&gt;
+无法被消耗的商品，比如一些教育型APP中的课程, 再比如一些赛车游戏中的赛道, 这类商品需要在审核添加恢复购买按钮, 用于用户购买过后再误删除或其他原因卸载APP后的恢复流程, 否则提交审核会被拒绝。&lt;/p&gt;
+&lt;p&gt;非续期订阅：&lt;br&gt;
+此类商品与消耗型商品类似, 比如一个月的会员, 一个季度的会员等,与消耗型商品的差异在于, 这类商品在验证凭证时需要传递共享秘钥&lt;/p&gt;
+&lt;p&gt;自动续期订阅：&lt;br&gt;
+这类商品和其他商品的流程也有些许不同, 应用比如视频APP中的连续包月会员, 此类商品到期会自动扣费, 服务器的验证逻辑也会有所不同,&lt;/p&gt;
+&lt;h3 id=&#34;内购对比&#34;&gt;内购对比&lt;/h3&gt;
+&lt;figure data-type=&#34;image&#34; tabindex=&#34;1&#34;&gt;&lt;img src=&#34;https://v-micro.github.io/post-images/1625110674053.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/figure&gt;
+&lt;h3 id=&#34;自动续订&#34;&gt;自动续订&lt;/h3&gt;
+&lt;figure data-type=&#34;image&#34; tabindex=&#34;2&#34;&gt;&lt;img src=&#34;https://v-micro.github.io/post-images/1625110708757.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/figure&gt;
+&lt;h3 id=&#34;官方整理的流程图&#34;&gt;官方整理的流程图&lt;/h3&gt;
+&lt;p&gt;1、App向业务服务器请求带有产品标识符的产品列表&lt;br&gt;
+2、业务服务器返回对应的产品列表&lt;br&gt;
+3、App向App Store请求产品&lt;br&gt;
+4、App Store返回对应的产品&lt;br&gt;
+5、App向用户在应用商店展示产品&lt;br&gt;
+6、用户在应用商店选择一款产品&lt;br&gt;
+7、App向App Store发送购买请求&lt;br&gt;
+8、App Store处理购买请求并返回交易信息&lt;br&gt;
+9、App将交易凭证发送给业务服务器&lt;br&gt;
+10、业务服务器记录交易凭证并核实&lt;br&gt;
+11、业务服务器向App Store发送交易凭证验证其有效性&lt;br&gt;
+12、App Store解析数据，并返回数据并验证其是否有效&lt;br&gt;
+13、业务服务器记录数据，并确定用户购买的产品&lt;br&gt;
+14、业务服务器向用户发送购买的产品&lt;br&gt;
+ps: 苹果只会告诉你单据是否有效  并不会告诉你单据是否使用过&lt;/p&gt;
+&lt;h3 id=&#34;校验代码示例&#34;&gt;校验代码示例&lt;/h3&gt;
 &lt;pre&gt;&lt;code&gt;var validate_url string
 //正式验证环境
 //validate_url = &amp;quot;https://buy.itunes.apple.com/verifyReceipt&amp;quot;
@@ -1471,7 +1503,7 @@ validate_url = &amp;quot;https://sandbox.itunes.apple.com/verifyReceipt&amp;quot
 //验证流程
 method := &amp;quot;POST&amp;quot;
 //验证请求
-payload := strings.NewReader(fmt.Sprintf(&amp;quot;{&#39;receipt-data&#39;:&#39;%s&#39;}&amp;quot;))
+payload := strings.NewReader(fmt.Sprintf(`{&amp;quot;receipt-data&amp;quot;:&amp;quot;验证凭证&amp;quot;,&amp;quot;password&amp;quot;:&amp;quot;秘钥&amp;quot;}`,receipt_data))
 client := &amp;amp;http.Client {}
 req, err := http.NewRequest(method, validate_url, payload)
 if err != nil {
@@ -1545,6 +1577,212 @@ fmt.Println(string(body))
 ps:逻辑相对比较简单。下面将解决内购退款的操作
 
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;返回参数&#34;&gt;返回参数&lt;/h3&gt;
+&lt;p&gt;可参考官方：&lt;br&gt;
+https://developer.apple.com/documentation/appstorereceipts/responsebody&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;
+{
+    &amp;quot;status&amp;quot;:0, //状态
+    &amp;quot;environment&amp;quot;:&amp;quot;Sandbox&amp;quot;,    //环境  Sandbox, Production
+    &amp;quot;receipt&amp;quot;:{ 
+        &amp;quot;receipt_type&amp;quot;:&amp;quot;ProductionSandbox&amp;quot;, //生成的收据类型。该值对应于进行应用程序或 VPP 购买的环境。可能的值 Production, ProductionVPP, ProductionSandbox, ProductionVPPSandbox
+        &amp;quot;adam_id&amp;quot;:0,    //app_item_id 一样
+        &amp;quot;app_item_id&amp;quot;:0,    //应用程序仅在生产中分配此标识符。
+        &amp;quot;bundle_id&amp;quot;:&amp;quot;xxx.xxx.xxx&amp;quot;,  //APP 标识符号
+        &amp;quot;application_version&amp;quot;:&amp;quot;1&amp;quot;,  //应用程序的版本号
+        &amp;quot;download_id&amp;quot;:0,    //下载交易的唯一标识符
+        &amp;quot;version_external_identifier&amp;quot;:0,    //程序修订版的任意数字。在沙箱中，该键的值为“0”
+        &amp;quot;receipt_creation_date&amp;quot;:&amp;quot;2020-04-01 07:10:09 Etc/GMT&amp;quot;,  //生成收据的时间-ios时间格式
+        &amp;quot;receipt_creation_date_ms&amp;quot;:&amp;quot;1585725009000&amp;quot;,
+        &amp;quot;receipt_creation_date_pst&amp;quot;:&amp;quot;2020-04-01 00:10:09 America/Los_Angeles&amp;quot;,
+        &amp;quot;request_date&amp;quot;:&amp;quot;2020-04-01 07:10:21 Etc/GMT&amp;quot;,   //收据响应时间
+        &amp;quot;request_date_ms&amp;quot;:&amp;quot;1585725021729&amp;quot;,
+        &amp;quot;request_date_pst&amp;quot;:&amp;quot;2020-04-01 00:10:21 America/Los_Angeles&amp;quot;,
+        &amp;quot;original_purchase_date&amp;quot;:&amp;quot;2013-08-01 07:00:00 Etc/GMT&amp;quot;, //购买的时间
+        &amp;quot;original_purchase_date_ms&amp;quot;:&amp;quot;1375340400000&amp;quot;,
+        &amp;quot;original_purchase_date_pst&amp;quot;:&amp;quot;2013-08-01 00:00:00 America/Los_Angeles&amp;quot;,
+        &amp;quot;original_application_version&amp;quot;:&amp;quot;1.0&amp;quot;,   //用户最初购买的应用程序版本
+        &amp;quot;in_app&amp;quot;:[        //app 商品类型
+            {
+                &amp;quot;quantity&amp;quot;:&amp;quot;1&amp;quot;, //购买消耗品数量 
+                &amp;quot;product_id&amp;quot;:&amp;quot;test_item_1&amp;quot;,// 消耗性项目
+                &amp;quot;transaction_id&amp;quot;:&amp;quot;1000000646065186&amp;quot;,    //例如购买、恢复或续订的标识符
+                &amp;quot;original_transaction_id&amp;quot;:&amp;quot;1000000646065186&amp;quot;,   //原始交易标识符
+                &amp;quot;purchase_date&amp;quot;:&amp;quot;2020-04-01 00:43:43 Etc/GMT&amp;quot;,  //向用户帐户收取购买或恢复的产品费用的时间
+                &amp;quot;purchase_date_ms&amp;quot;:&amp;quot;1585701823000&amp;quot;,
+                &amp;quot;purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:43:43 America/Los_Angeles&amp;quot;,
+                &amp;quot;original_purchase_date&amp;quot;:&amp;quot;2020-04-01 00:43:43 Etc/GMT&amp;quot;, //原始应用内购买的时间
+                &amp;quot;original_purchase_date_ms&amp;quot;:&amp;quot;1585701823000&amp;quot;,
+                &amp;quot;original_purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:43:43 America/Los_Angeles&amp;quot;,
+                &amp;quot;is_trial_period&amp;quot;:&amp;quot;false&amp;quot;   //订阅是否处于免费试用期
+            },
+            {
+                &amp;quot;quantity&amp;quot;:&amp;quot;1&amp;quot;,
+                &amp;quot;product_id&amp;quot;:&amp;quot;test_item_2&amp;quot;,//非消耗性
+                &amp;quot;transaction_id&amp;quot;:&amp;quot;1000000646065025&amp;quot;,
+                &amp;quot;original_transaction_id&amp;quot;:&amp;quot;1000000646065025&amp;quot;,
+                &amp;quot;purchase_date&amp;quot;:&amp;quot;2020-04-01 00:41:21 Etc/GMT&amp;quot;,
+                &amp;quot;purchase_date_ms&amp;quot;:&amp;quot;1585701681000&amp;quot;,
+                &amp;quot;purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:41:21 America/Los_Angeles&amp;quot;,
+                &amp;quot;original_purchase_date&amp;quot;:&amp;quot;2020-04-01 00:41:21 Etc/GMT&amp;quot;,
+                &amp;quot;original_purchase_date_ms&amp;quot;:&amp;quot;1585701681000&amp;quot;,
+                &amp;quot;original_purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:41:21 America/Los_Angeles&amp;quot;,
+                &amp;quot;is_trial_period&amp;quot;:&amp;quot;false&amp;quot;
+            },
+            {
+                &amp;quot;quantity&amp;quot;:&amp;quot;1&amp;quot;,
+               &amp;quot;product_id&amp;quot;:&amp;quot;test_item_3&amp;quot;,// 非自动续期订阅
+               &amp;quot;transaction_id&amp;quot;:&amp;quot;1000000650241590&amp;quot;,
+               &amp;quot;original_transaction_id&amp;quot;:&amp;quot;1000000650241590&amp;quot;,
+               &amp;quot;purchase_date&amp;quot;:&amp;quot;2020-04-10 02:27:13 Etc/GMT&amp;quot;,
+               &amp;quot;purchase_date_ms&amp;quot;:&amp;quot;1586485633000&amp;quot;,
+               &amp;quot;purchase_date_pst&amp;quot;:&amp;quot;2020-04-09 19:27:13 America/Los_Angeles&amp;quot;,
+               &amp;quot;original_purchase_date&amp;quot;:&amp;quot;2020-04-10 02:27:13 Etc/GMT&amp;quot;,
+               &amp;quot;original_purchase_date_ms&amp;quot;:&amp;quot;1586485633000&amp;quot;,
+               &amp;quot;original_purchase_date_pst&amp;quot;:&amp;quot;2020-04-09 19:27:13 America/Los_Angeles&amp;quot;,
+               &amp;quot;is_trial_period&amp;quot;:&amp;quot;false&amp;quot;
+            },
+            {
+                &amp;quot;quantity&amp;quot;:&amp;quot;1&amp;quot;,
+                &amp;quot;product_id&amp;quot;:&amp;quot;test_item_4&amp;quot;,// 自动续期订阅
+                &amp;quot;transaction_id&amp;quot;:&amp;quot;1000000646065960&amp;quot;,
+                &amp;quot;original_transaction_id&amp;quot;:&amp;quot;1000000646065960&amp;quot;,
+                &amp;quot;purchase_date&amp;quot;:&amp;quot;2020-04-01 00:49:18 Etc/GMT&amp;quot;,
+                &amp;quot;purchase_date_ms&amp;quot;:&amp;quot;1585702158000&amp;quot;,
+                &amp;quot;purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:49:18 America/Los_Angeles&amp;quot;,
+                &amp;quot;original_purchase_date&amp;quot;:&amp;quot;2020-04-01 00:49:19 Etc/GMT&amp;quot;,
+                &amp;quot;original_purchase_date_ms&amp;quot;:&amp;quot;1585702159000&amp;quot;,
+                &amp;quot;original_purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:49:19 America/Los_Angeles&amp;quot;,
+                &amp;quot;expires_date&amp;quot;:&amp;quot;2020-04-01 00:52:18 Etc/GMT&amp;quot;,
+                &amp;quot;expires_date_ms&amp;quot;:&amp;quot;1585702338000&amp;quot;,
+                &amp;quot;expires_date_pst&amp;quot;:&amp;quot;2020-03-31 17:52:18 America/Los_Angeles&amp;quot;,
+                &amp;quot;web_order_line_item_id&amp;quot;:&amp;quot;1000000051400327&amp;quot;,
+                &amp;quot;is_trial_period&amp;quot;:&amp;quot;false&amp;quot;,
+                &amp;quot;is_in_intro_offer_period&amp;quot;:&amp;quot;false&amp;quot;
+            },
+            {
+                .......
+              // 省略N次自动续期交易
+            },
+            {
+                &amp;quot;quantity&amp;quot;:&amp;quot;1&amp;quot;,
+                &amp;quot;product_id&amp;quot;:&amp;quot;test_item_4&amp;quot;,
+                &amp;quot;transaction_id&amp;quot;:&amp;quot;1000000646068127&amp;quot;,
+                &amp;quot;original_transaction_id&amp;quot;:&amp;quot;1000000646065960&amp;quot;,
+                &amp;quot;purchase_date&amp;quot;:&amp;quot;2020-04-01 01:04:18 Etc/GMT&amp;quot;,
+                &amp;quot;purchase_date_ms&amp;quot;:&amp;quot;1585703058000&amp;quot;,
+                &amp;quot;purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 18:04:18 America/Los_Angeles&amp;quot;,
+                &amp;quot;original_purchase_date&amp;quot;:&amp;quot;2020-04-01 00:49:19 Etc/GMT&amp;quot;,
+                &amp;quot;original_purchase_date_ms&amp;quot;:&amp;quot;1585702159000&amp;quot;,
+                &amp;quot;original_purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:49:19 America/Los_Angeles&amp;quot;,
+                &amp;quot;expires_date&amp;quot;:&amp;quot;2020-04-01 01:07:18 Etc/GMT&amp;quot;,
+                &amp;quot;expires_date_ms&amp;quot;:&amp;quot;1585703238000&amp;quot;,
+                &amp;quot;expires_date_pst&amp;quot;:&amp;quot;2020-03-31 18:07:18 America/Los_Angeles&amp;quot;,
+                &amp;quot;web_order_line_item_id&amp;quot;:&amp;quot;1000000051400432&amp;quot;,
+                &amp;quot;is_trial_period&amp;quot;:&amp;quot;false&amp;quot;,
+                &amp;quot;is_in_intro_offer_period&amp;quot;:&amp;quot;false&amp;quot;
+            }
+        ]
+    },
+    //内购买交易的数组
+    &amp;quot;latest_receipt_info&amp;quot;:[
+        {
+            &amp;quot;quantity&amp;quot;:&amp;quot;1&amp;quot;, //购买的消耗品数量
+            &amp;quot;product_id&amp;quot;:&amp;quot;test_item_1&amp;quot;, //商品唯一标识
+            &amp;quot;transaction_id&amp;quot;:&amp;quot;1000000646065186&amp;quot;,       //交易流水号
+            &amp;quot;original_transaction_id&amp;quot;:&amp;quot;1000000646065186&amp;quot;,   //原始交易单号
+            &amp;quot;purchase_date&amp;quot;:&amp;quot;2020-04-01 00:43:43 Etc/GMT&amp;quot;, //购买交易时间
+            &amp;quot;purchase_date_ms&amp;quot;:&amp;quot;1585701823000&amp;quot;,
+            &amp;quot;purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:43:43 America/Los_Angeles&amp;quot;,
+            &amp;quot;original_purchase_date&amp;quot;:&amp;quot;2020-04-01 00:43:43 Etc/GMT&amp;quot;, //原始应用购买的时间
+            &amp;quot;original_purchase_date_ms&amp;quot;:&amp;quot;1585701823000&amp;quot;,
+            &amp;quot;original_purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:43:43 America/Los_Angeles&amp;quot;,
+            &amp;quot;is_trial_period&amp;quot;:&amp;quot;false&amp;quot;   //订阅是否处于免费试用期的指标
+        },
+        {
+            &amp;quot;quantity&amp;quot;:&amp;quot;1&amp;quot;,
+            &amp;quot;product_id&amp;quot;:&amp;quot;test_item_2&amp;quot;,
+            &amp;quot;transaction_id&amp;quot;:&amp;quot;1000000646065025&amp;quot;,
+            &amp;quot;original_transaction_id&amp;quot;:&amp;quot;1000000646065025&amp;quot;,
+            &amp;quot;purchase_date&amp;quot;:&amp;quot;2020-04-01 00:41:21 Etc/GMT&amp;quot;,
+            &amp;quot;purchase_date_ms&amp;quot;:&amp;quot;1585701681000&amp;quot;,
+            &amp;quot;purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:41:21 America/Los_Angeles&amp;quot;,
+            &amp;quot;original_purchase_date&amp;quot;:&amp;quot;2020-04-01 00:41:21 Etc/GMT&amp;quot;,
+            &amp;quot;original_purchase_date_ms&amp;quot;:&amp;quot;1585701681000&amp;quot;,
+            &amp;quot;original_purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:41:21 America/Los_Angeles&amp;quot;,
+            &amp;quot;is_trial_period&amp;quot;:&amp;quot;false&amp;quot;
+        },
+                {
+            &amp;quot;quantity&amp;quot;:&amp;quot;1&amp;quot;,
+            &amp;quot;product_id&amp;quot;:&amp;quot;test_item_2&amp;quot;,
+            &amp;quot;transaction_id&amp;quot;:&amp;quot;1000000646065025&amp;quot;,
+            &amp;quot;original_transaction_id&amp;quot;:&amp;quot;1000000646065025&amp;quot;,
+            &amp;quot;purchase_date&amp;quot;:&amp;quot;2020-04-01 00:41:21 Etc/GMT&amp;quot;,
+            &amp;quot;purchase_date_ms&amp;quot;:&amp;quot;1585701681000&amp;quot;,
+            &amp;quot;purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:41:21 America/Los_Angeles&amp;quot;,
+            &amp;quot;original_purchase_date&amp;quot;:&amp;quot;2020-04-01 00:41:21 Etc/GMT&amp;quot;,
+            &amp;quot;original_purchase_date_ms&amp;quot;:&amp;quot;1585701681000&amp;quot;,
+            &amp;quot;original_purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:41:21 America/Los_Angeles&amp;quot;,
+            &amp;quot;is_trial_period&amp;quot;:&amp;quot;false&amp;quot;
+        },
+        {
+            &amp;quot;quantity&amp;quot;:&amp;quot;1&amp;quot;,
+            &amp;quot;product_id&amp;quot;:&amp;quot;test_item_3&amp;quot;,
+            &amp;quot;transaction_id&amp;quot;:&amp;quot;1000000650241590&amp;quot;,
+            &amp;quot;original_transaction_id&amp;quot;:&amp;quot;1000000650241590&amp;quot;,
+            &amp;quot;purchase_date&amp;quot;:&amp;quot;2020-04-10 02:27:13 Etc/GMT&amp;quot;,
+            &amp;quot;purchase_date_ms&amp;quot;:&amp;quot;1586485633000&amp;quot;,
+            &amp;quot;purchase_date_pst&amp;quot;:&amp;quot;2020-04-09 19:27:13 America/Los_Angeles&amp;quot;,
+            &amp;quot;original_purchase_date&amp;quot;:&amp;quot;2020-04-10 02:27:13 Etc/GMT&amp;quot;,
+            &amp;quot;original_purchase_date_ms&amp;quot;:&amp;quot;1586485633000&amp;quot;,
+            &amp;quot;original_purchase_date_pst&amp;quot;:&amp;quot;2020-04-09 19:27:13 America/Los_Angeles&amp;quot;,
+            &amp;quot;expires_date&amp;quot;:&amp;quot;2020-04-01 00:52:18 Etc/GMT&amp;quot;,
+            &amp;quot;is_trial_period&amp;quot;:&amp;quot;false&amp;quot;,
+        },
+        {
+            &amp;quot;quantity&amp;quot;:&amp;quot;1&amp;quot;,
+            &amp;quot;product_id&amp;quot;:&amp;quot;test_item_4&amp;quot;,
+            &amp;quot;transaction_id&amp;quot;:&amp;quot;1000000646068127&amp;quot;,
+            &amp;quot;original_transaction_id&amp;quot;:&amp;quot;1000000646065960&amp;quot;,
+            &amp;quot;purchase_date&amp;quot;:&amp;quot;2020-04-01 01:04:18 Etc/GMT&amp;quot;,
+            &amp;quot;purchase_date_ms&amp;quot;:&amp;quot;1585703058000&amp;quot;,
+            &amp;quot;purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 18:04:18 America/Los_Angeles&amp;quot;,
+            &amp;quot;original_purchase_date&amp;quot;:&amp;quot;2020-04-01 00:49:19 Etc/GMT&amp;quot;,
+            &amp;quot;original_purchase_date_ms&amp;quot;:&amp;quot;1585702159000&amp;quot;,
+            &amp;quot;original_purchase_date_pst&amp;quot;:&amp;quot;2020-03-31 17:49:19 America/Los_Angeles&amp;quot;,
+            &amp;quot;expires_date&amp;quot;:&amp;quot;2020-04-01 01:07:18 Etc/GMT&amp;quot;,
+            &amp;quot;expires_date_ms&amp;quot;:&amp;quot;1585703238000&amp;quot;,
+            &amp;quot;expires_date_pst&amp;quot;:&amp;quot;2020-03-31 18:07:18 America/Los_Angeles&amp;quot;,
+            &amp;quot;web_order_line_item_id&amp;quot;:&amp;quot;1000000051400432&amp;quot;,
+            &amp;quot;is_trial_period&amp;quot;:&amp;quot;false&amp;quot;,
+            &amp;quot;is_in_intro_offer_period&amp;quot;:&amp;quot;false&amp;quot;,
+            &amp;quot;subscription_group_identifier&amp;quot;:&amp;quot;20609507&amp;quot;
+        }
+    ],
+    //最新的凭证
+    &amp;quot;latest_receipt&amp;quot;:&amp;quot;xxxxxxxxxxx&amp;quot;,
+    &amp;quot;pending_renewal_info&amp;quot;:[
+        {
+            &amp;quot;expiration_intent&amp;quot;:&amp;quot;1&amp;quot;,    //订阅过期的原因。此字段仅适用于包含过期自动续订订阅的收据。
+            &amp;quot;auto_renew_product_id&amp;quot;:&amp;quot;test_item_4&amp;quot;,  //客户订阅续订的产品的属性
+            &amp;quot;original_transaction_id&amp;quot;:&amp;quot;1000000646065960&amp;quot;,   //原始购买的交易标识符。
+            &amp;quot;is_in_billing_retry_period&amp;quot;:&amp;quot;0&amp;quot;,   //指示 Apple 正在尝试自动续订过期订阅的标志
+            &amp;quot;product_id&amp;quot;:&amp;quot;test_item_4&amp;quot;, //所购买产品的唯一标识符
+            &amp;quot;auto_renew_status&amp;quot;:&amp;quot;0&amp;quot; //自动续订订阅的当前续订状态
+        }
+    ]
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;内购返回结果判断方案&#34;&gt;内购返回结果判断方案&lt;/h3&gt;
+&lt;p&gt;核心判断参数：&lt;br&gt;
+latest_receipt_info //交易记录&lt;br&gt;
+latest_receipt_info.transaction_id //子订单号&lt;br&gt;
+latest_receipt_info.original_transaction_id //原始订单号&lt;br&gt;
+latest_receipt_info.purchase_date_ms  //支付时间戳&lt;br&gt;
+latest_receipt_info.original_purchase_date_ms //原始支付时间&lt;br&gt;
+latest_receipt_info.expires_date_ms  //到期时间戳&lt;br&gt;
+status      //凭证状态&lt;/p&gt;
+&lt;p&gt;可以通过以上参数判断订单状态&lt;/p&gt;
 ">ios内购（go 版本）</a>
       </div>
       
