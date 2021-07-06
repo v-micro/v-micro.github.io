@@ -8,7 +8,7 @@
 <meta name="keywords" content="吃的苦中苦，方能开路虎">
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
-<title>搭建日志系统EFK | 蔡小辉</title>
+<title>redis | 蔡小辉</title>
 <link rel="shortcut icon" href="/favicon.ico?v=1625536418770">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
@@ -41,7 +41,7 @@
 
 
 
-  <meta name="description" content="搭建日志系统EFK" />
+  <meta name="description" content="redis" />
   <meta name="keywords" content="" />
 </head>
 
@@ -175,7 +175,8 @@
       <div class="sidebar-body pisces" id="sidebar_body">
         
           
-            
+            <div class="post-side-meta" id="post_side_meta">
+              
 <div class="sidebar-wrapper box-shadow-wrapper bg-color">
   <div class="sidebar-item">
     <img class="site-author-image right-motion" src="/images/avatar.png"/>
@@ -213,6 +214,213 @@
 
 
 </div>
+            </div>
+            <div class="post-toc sidebar-body-active" id="post_toc" style="opacity: 1;">
+              <div class="toc-box right-motion">
+  <div class="toc-wrapper auto-number auto"
+    id="toc_wrapper">
+    <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#redis%E7%AE%80%E4%BB%8B">redis简介</a></li>
+<li><a href="#%E5%BC%80%E5%A7%8B%E5%AE%89%E8%A3%85">开始安装</a></li>
+<li><a href="#redis%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C">redis基本操作</a></li>
+<li><a href="#redis-%E5%AD%97%E7%AC%A6%E4%B8%B2">redis 字符串</a></li>
+<li><a href="#redis-%E9%9B%86%E5%90%88">redis 集合</a></li>
+<li><a href="#redis%E6%9C%89%E5%BA%8F%E9%9B%86%E5%90%88">redis有序集合</a></li>
+<li><a href="#redis%E5%88%97%E8%A1%A8">redis列表</a></li>
+<li><a href="#redis-hash">redis hash</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E5%88%86%E6%9E%90">使用场景分析</a></li>
+<li><a href="#%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B%E4%B9%8Bsession%E5%AD%98%E5%82%A8">简单案例之session存储</a></li>
+<li><a href="#%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B%E4%B9%8B%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81">简单案例之分布式锁</a></li>
+<li><a href="#%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B%E4%B9%8Bredis%E4%BA%8B%E5%8A%A1">简单案例之redis事务</a></li>
+<li><a href="#%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B%E4%B9%8B%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85%E6%A8%A1%E5%BC%8F">简单案例之发布/订阅模式</a></li>
+<li><a href="#%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B%E4%B9%8B%E4%BB%BB%E5%8A%A1%E9%98%9F%E5%88%97">简单案例之任务队列</a></li>
+<li><a href="#%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B%E4%B9%8Bredis%E7%AE%A1%E9%81%93">简单案例之redis管道</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+</div>
+
+<script>
+
+  let lastTop = 0, lList = [], hList = [], postBody, lastIndex = -1;
+  let active = 'active-show', activeClass = 'active-current';
+  let tocWrapper = document.querySelector('#toc_wrapper');
+  let tocContent = tocWrapper.children[0];
+  let autoNumber = tocWrapper && tocWrapper.classList.contains('auto-number');
+
+  function addTocNumber(elem, deep) {
+    if (!elem) {
+      return;
+    }
+    let prop = elem.__proto__;
+
+    if (prop === HTMLUListElement.prototype) {
+      for (let i = 0; i < elem.children.length; i++) {
+        addTocNumber(elem.children[i], deep + (i + 1) + '.');
+      }
+    } else if (prop === HTMLLIElement.prototype) {
+      // 保存li元素
+      if (elem.children[0] && elem.children[0].__proto__ === HTMLAnchorElement.prototype) {
+        lList.push(elem);
+      }
+      for (let i = 0; i < elem.children.length; i++) {
+        let cur = elem.children[i];
+        if (cur.__proto__ === HTMLAnchorElement.prototype) {
+          if (autoNumber) {
+            cur.text = deep + ' ' + cur.text;
+          }
+        } else if (cur.__proto__ === HTMLUListElement.prototype) {
+          addTocNumber(cur, deep);
+        }
+      }
+    }
+  }
+
+  function removeParentActiveClass() {
+    let parents = tocContent.querySelectorAll('.' + active)
+    parents.forEach(function (elem) {
+      elem.classList.remove(active);
+    });
+  }
+
+  function addActiveClass(index) {
+    if (index >= 0 && index < hList.length) {
+      lList[index].classList.add(activeClass);
+    }
+  }
+
+  function removeActiveClass(index) {
+    if (index >= 0 && index < hList.length) {
+      lList[index].classList.remove(activeClass);
+    }
+  }
+
+  function addActiveLiElemment(elem, parent) {
+    if (!elem || elem === parent) {
+      return;
+    } else {
+      if (elem.__proto__ === HTMLLIElement.prototype) {
+        elem.classList.add(active);
+      }
+      addActiveLiElemment(elem.parentElement, parent);
+    }
+  }
+
+  function showToc() {
+    if (tocWrapper) {
+      postBody = document.querySelector('#post_body');
+      for (let i = 0; i < postBody.children.length; i++) {
+        if (postBody.children[i].__proto__ === HTMLHeadingElement.prototype) {
+          hList.push(postBody.children[i]);
+        }
+      }
+      if (tocWrapper.classList.contains('compress')) {
+        tocContent.classList.add('closed');
+      } else if (tocWrapper.classList.contains('no_compress')) {
+        tocContent.classList.add('expanded');
+      } else {
+        if (hList.length > 10) {
+          active = 'active-hidden'
+          tocContent.classList.add('closed');
+        } else {
+          tocContent.classList.add('expanded');
+        }
+      }
+    }
+  }
+
+  (function () {
+    // 处理不是从#一级标题开始目录
+    if (tocContent.children.length === 1 && tocContent.children[0].__proto__ === HTMLLIElement.prototype) {
+      let con = tocContent.children[0].children[0];
+      tocContent.innerHTML = con.innerHTML;
+    }
+    let markdownItTOC = document.querySelector('.markdownIt-TOC');
+    let innerHeight = window.innerHeight;
+    markdownItTOC.style = `max-height: ${innerHeight - 80 > 0 ? innerHeight - 80 : innerHeight}px`
+    addTocNumber(tocContent, '');
+  })();
+
+  document.addEventListener('scroll', function (e) {
+    if (lList.length <= 0) {
+      return;
+    }
+    let scrollTop = document.scrollingElement.scrollTop + 10;
+    let dir;
+
+    if (lastTop - scrollTop > 0) {
+      dir = 'up';
+    } else {
+      dir = 'down';
+    }
+
+    lastTop = scrollTop;
+    if (scrollTop <= 0) {
+      if (lastIndex >= 0 && lastIndex < hList.length) {
+        lList[lastIndex].classList.remove(activeClass);
+      }
+      return;
+    }
+
+    let current = 0, hasFind = false;
+    for (let i = 0; i < hList.length; i++) {
+      if (hList[i].offsetTop > scrollTop) {
+        current = i;
+        hasFind = true;
+        break;
+      }
+    }
+    if (!hasFind && scrollTop > lList[lList.length - 1].offsetTop) {
+      current = hList.length - 1;
+    } else {
+      current--;
+    }
+    if (dir === 'down') {
+      if (current > lastIndex) {
+        addActiveClass(current);
+        removeActiveClass(lastIndex)
+        lastIndex = current;
+        removeParentActiveClass();
+        lList[current] && addActiveLiElemment(lList[current].parentElement, tocContent);
+      }
+    } else {
+      if (current < lastIndex) {
+        addActiveClass(current);
+        removeActiveClass(lastIndex);
+        lastIndex = current;
+        removeParentActiveClass();
+        lList[current] && addActiveLiElemment(lList[current].parentElement, tocContent);
+      }
+    }
+  });
+
+
+  window.addEventListener('load', function () {
+    showToc();
+    document.querySelector('#sidebar').style = 'display: block;';
+    tocWrapper.classList.add('toc-active');
+    setTimeout(function () {
+      if ("createEvent" in document) {
+        let evt = document.createEvent("HTMLEvents");
+        evt.initEvent("scroll", false, true);
+        document.dispatchEvent(evt);
+      }
+      else {
+        document.fireEvent("scroll");
+      }
+    }, 500)
+  })
+
+</script>
+            </div>
           
         
       </div>
@@ -300,8 +508,8 @@
           <div class="section bg-color post post-page">
             <section class="post-header">
   <h1 class="post-title">
-    <a class="post-title-link" href="https://v-micro.github.io/post/da-jian-ri-zhi-xi-tong-efk/">
-      搭建日志系统EFK
+    <a class="post-title-link" href="https://v-micro.github.io/post/redis/">
+      redis
     </a>
   </h1>
   <div class="post-meta">
@@ -309,107 +517,493 @@
     <span class="meta-item pc-show">
       <i class="fa fa-calendar-o"></i>
       <span class="language" data-lan="publish">发布于</span>
-      <span class="publish-time" data-t="2021-06-21 11:52:27">2021-06-21</span>
+      <span class="publish-time" data-t="2021-07-02 14:20:00">2021-07-02</span>
       <span class="post-meta-divider pc-show">|</span>
     </span>
     
     <span class="meta-item">
       <i class="fa fa-clock-o"></i>
-      <span>3<span class="language" data-lan="minute">分钟</span></span>
+      <span>14<span class="language" data-lan="minute">分钟</span></span>
     </span>
     <span class="meta-item">
       <span class="post-meta-divider">|</span>
       <i class="fa fa-file-word-o"></i>
-      <span>406<span class="pc-show language" data-lan="words">字数</span></span>
+      <span>2688<span class="pc-show language" data-lan="words">字数</span></span>
     </span>
     
   </div>
 </section>
             <div class="post-body next-md-body" id="post_body">
-              <p>efk 日志搜集系统</p>
-<p>filebeat 主要用于收集日志</p>
-<pre><code>//下载filebeat
-curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.10.1-darwin-x86_64.tar.gz
-tar xzvf filebeat-7.10.1-darwin-x86_64.tar.gz
-cd filebeat-7.10.1-darwin-x86_64/
+              <p>项目中需要所以从宿主机整理了一份redis 安装大全用做记录。</p>
+<h3 id="redis简介">redis简介</h3>
+<p>REmote DIctionary Server(Redis) 是一个由 Salvatore Sanfilippo 写的 key-value 存储系统，是跨平台的非关系型数据库。</p>
+<h3 id="开始安装">开始安装</h3>
+<pre><code>//习惯性的吧软件装在/usr/local/
+cd /usr/local/
+//下载nginx
+wget https://download.redis.io/releases/redis-6.2.4.tar.gz
+//解压
+tar -zxvf redis-6.2.4.tar.gz
+//进入目录
+cd redis-6.2.4
+//开始编译
+make
+//make 测试
+make test
+//启动redis
+./redis-server
 
-//修改配置
-vim filebeat.yml
+//redis-cli 是命令行操作
+./redis-cli
 
-output.elasticsearch:
-  hosts: [&quot;&lt;es_url&gt;&quot;]
-  username: &quot;elastic&quot;
-  password: &quot;&lt;password&gt;&quot;
-setup.kibana:
-  host: &quot;&lt;kibana_url&gt;&quot;
+//如果需要按照指定配置启动则 
+./redis-server /usr/local/redis-6.2.4/redis.conf
 
-//开启配置
-./filebeat modules enable system
+//需要修改密码则需要修改redis.conf
+requirepass 123
 
-//配置索引
-./filebeat setup
+//设置密码方法二
+./redis-cli         //进入客户端界面
+config set requirepass 123  //设置密码
+config get requirepass      //查看密码
 
-//启动
-./filebeat -e
+//默认连接端口
+ip:127.0.0.1   prot: 6379  密码：123
+
+//使用密码登录
+./redis-cli -p 6379 -a redis.redis
+
+//也可以登录进去校验密码
+./redis-cli -p 6379
+auth  123
 </code></pre>
-<p>golang 日志写入es</p>
-<pre><code>//go引入拓展包
-&quot;github.com/olivere/elastic/v7&quot;
-&quot;github.com/sirupsen/logrus&quot;
-&quot;gopkg.in/sohlich/elogrus.v7&quot;
+<h3 id="redis基本操作">redis基本操作</h3>
+<pre><code>官方文档 ：https://redis.io/commands/set
+//模糊搜索
+127.0.0.1:6379&gt; keys tes*
+1) &quot;test&quot;
 
-//日志格式
-跟踪，调试，信息，警告，错误，严重, 紧急
-logrus.Trace(&quot;Something very low level.&quot;)
-logrus.Debug(&quot;Useful debugging information.&quot;)
-logrus.Info(&quot;Something noteworthy happened!&quot;)
-logrus.Warn(&quot;You should probably take a look at this.&quot;)
-logrus.Error(&quot;Something failed but I'm not quitting.&quot;)
-logrus.Fatal(&quot;Bye.&quot;)
-logrus.Panic(&quot;I'm bailing.&quot;)
+//获取总数
+127.0.0.1:6379&gt; DBSIZE
+(integer) 3
 
-//链接es
-log := logrus.New()
-client, err := elastic.NewClient(elastic.SetSniff(false),elastic.SetURL(&quot;http://192.168.59.131:9200&quot;))
-if err != nil {
-    log.Panic(err)
-}
-//设置日志命中索引
-hook, err := elogrus.NewAsyncElasticHook(client, &quot;localhost&quot;, logrus.DebugLevel, &quot;mylog&quot;)
-if err != nil {
-    log.Panic(err)
-}
-log.Hooks.Add(hook)
+//判断是否存在
+127.0.0.1:6379&gt; EXISTS social:user:14
+(integer) 1
 
-//打印日志
-log.Debug(&quot;test log.Debug&quot;)
+//删除键
+127.0.0.1:6379&gt; DEL java javastack
+(integer) 1
+
+//查看key周期
+127.0.0.1:6379&gt; TTL social:user:14      //秒
+(integer) 31180
+127.0.0.1:6379&gt; PTTL social:user:14         //毫秒
+(integer) 31053570
+
+//设置key生命周期
+127.0.0.1:6379&gt; EXPIRE javastack 60             //秒
+(integer) 1
+127.0.0.1:6379&gt; PEXPIRE javastack 60             //毫秒
+(integer) 1
+127.0.0.1:6379&gt; PERSIST  javastack           //永不过期
+(integer) 1
+
+//更改键名
+127.0.0.1:6379&gt; RENAME  javastack  javastack2222
+(integer) 1
+
+//获取key类型
+127.0.0.1:6379&gt; type user
+hash
 </code></pre>
-<p>日志数据范例</p>
-<pre><code>{
-  &quot;_index&quot;: &quot;syslogs-activity-center-20210309&quot;,
-  &quot;_type&quot;: &quot;_doc&quot;,
-  &quot;_id&quot;: &quot;ezNSF3gBs6Dx5qGDvjGx&quot;,
-  &quot;_version&quot;: 1,
-  &quot;_score&quot;: null,
-  &quot;_source&quot;: {
-    &quot;Id&quot;: 0,
-    &quot;Appid&quot;: &quot;activity-center&quot;,
-    &quot;Level&quot;: &quot;INFO&quot;,
-    &quot;Logger&quot;: &quot;I0309 22:10:01.606191       1 db.go:44&quot;,
-    &quot;Message&quot;: &quot; mysql断开重连, try 2...\n&quot;,
-    &quot;Exception&quot;: &quot;&quot;,
-    &quot;Stacktrace&quot;: &quot;&quot;,
-    &quot;Createdatetime&quot;: &quot;2021-03-09T22:10:01.611741871+08:00&quot;
-  },
-  &quot;fields&quot;: {
-    &quot;Createdatetime&quot;: [
-      &quot;2021-03-09T14:10:01.611Z&quot;
-    ]
-  },
-  &quot;sort&quot;: [
-    1615299001611
-  ]
+<h3 id="redis-字符串">redis 字符串</h3>
+<p>说明：字符串是Redis中最基本的数据类型，单个数据能存储的最大空间是512M。</p>
+<pre><code>//写入数据
+127.0.0.1:6379&gt; set php 1111
+(integer) 1
+可设置一下参数
+ex 秒
+px 毫秒
+exat 指定过期时间(时间戳)
+pxat 指定过期时间(毫秒)
+例子： set php hello,word exat 1625470391   //指定时间过期
+
+//获取数据
+127.0.0.1:6379&gt; get test
+&quot;1&quot;
+
+//递增/递减  内容不是数字则报错
+127.0.0.1:6379&gt; INCR test
+(integer) 10
+127.0.0.1:6379&gt; DECR test
+(integer) 9
+
+//批量新增
+127.0.0.1:6379&gt; mset test1 1 test2 2 test3 3
+OK
+
+//批量获取
+127.0.0.1:6379&gt; mget test1 test2 test3
+1) &quot;1&quot;
+2) &quot;2&quot;
+3) &quot;3&quot;
+
+//获取字符长度
+127.0.0.1:6379&gt; strlen test1
+(integer) 1
+
+//追加内容
+127.0.0.1:6379&gt; append test1 test
+(integer) 6
+
+//获取指定部分的字符
+127.0.0.1:6379&gt; getrange test1 0 3
+&quot;12te&quot;
+</code></pre>
+<h3 id="redis-集合">redis 集合</h3>
+<p>说明：集合类型和列表类型相似，只不过是集合是无序且不可重复的。</p>
+<pre><code>//集合写入
+127.0.0.1:6379&gt; sadd test php go js h5
+(integer) 4
+
+//集合获取
+127.0.0.1:6379&gt; smembers test       //获取所有
+1) &quot;js&quot;
+2) &quot;php&quot;
+3) &quot;go&quot;
+4) &quot;h5&quot;
+
+127.0.0.1:6379&gt; srandmember test 2  //获取指定数量
+1) &quot;js&quot;
+2) &quot;go&quot;
+
+//判断集合是否存在元素
+127.0.0.1:6379&gt; sismember test php
+(integer) 1
+
+//获取元素个数
+127.0.0.1:6379&gt; scard test
+(integer) 4
+
+//删除集合元素
+127.0.0.1:6379&gt; srem test js
+(integer) 1
+
+//弹出集合中的元素(这个操作是无顺序的)
+127.0.0.1:6379&gt; spop test 1
+1) &quot;php&quot;
+</code></pre>
+<h3 id="redis有序集合">redis有序集合</h3>
+<p>和列表的区别<br>
+列表使用链表实现，两头快，中间慢。有序集合是散列表和跳跃表实现的，即使读取中间的元素也比较快。<br>
+列表不能调整元素位置，有序集合能。<br>
+有序集合比列表更占内存。</p>
+<pre><code>//有序写入
+127.0.0.1:6379&gt; zadd test 1 zhangsan 2 lisi 3 wangwu 4 hei 5 bai
+(integer) 3
+
+//查询指定member 的分数
+127.0.0.1:6379&gt; ZSCORE test zhangsan
+&quot;1&quot;
+
+//查询列表 （不带分数）
+127.0.0.1:6379&gt; ZRANGE test 0 -1
+1) &quot;zhangsan&quot;
+2) &quot;lisi&quot;
+3) &quot;wangwu&quot;
+4) &quot;hei&quot;
+5) &quot;bai&quot;
+
+//查询列表 带分数  从低到高
+127.0.0.1:6379&gt; ZRANGE test 0 -1 withscores
+ 1) &quot;zhangsan&quot;
+ 2) &quot;1&quot;
+ 3) &quot;lisi&quot;
+ 4) &quot;2&quot;
+ 5) &quot;wangwu&quot;
+ 6) &quot;3&quot;
+ 7) &quot;hei&quot;
+ 8) &quot;4&quot;
+ 9) &quot;bai&quot;
+10) &quot;5&quot;
+//查询列表 带分数  从高到低
+127.0.0.1:6379&gt; ZREVRANGE test 0 -1 withscores
+1) &quot;zhangsan&quot;
+2) &quot;10&quot;
+3) &quot;bai&quot;
+4) &quot;5&quot;
+5) &quot;wangwu&quot;
+6) &quot;3&quot;
+7) &quot;lisi&quot;
+8) &quot;2&quot;
+
+//获取指定范围分数的数据
+127.0.0.1:6379&gt; zrangebyscore test 3 5
+1) &quot;wangwu&quot;
+2) &quot;hei&quot;
+3) &quot;bai&quot;
+
+
+//增加 元素分数
+127.0.0.1:6379&gt; ZINCRBY test 10 hei
+&quot;15&quot;
+
+//获取总数
+127.0.0.1:6379&gt; zcard test 
+(integer) 5
+
+//统计范围分数内的数据
+127.0.0.1:6379&gt; ZCOUNT test 1 10
+(integer) 4
+
+//删除指定元素
+127.0.0.1:6379&gt; ZREM test hei
+(integer) 1
+</code></pre>
+<h3 id="redis列表">redis列表</h3>
+<p>列表类型是一个有序的字段串列表，内部是使用双向链表实现，所有可以向两端操作元素，获取两端的数据速度快，通过索引到具体的行数比较慢。列表类型的元素是有序且可以重复的。</p>
+<pre><code>//左存列表
+127.0.0.1:6379&gt; lpush test zhangsan lisi wangwu aoteman
+(integer) 4
+
+//右存列表
+127.0.0.1:6379&gt; rpush test zhangsan lisi wangwu aoteman
+(integer) 4
+
+//获取总元素
+127.0.0.1:6379&gt; LLEN test 
+(integer) 4
+
+//获取所有
+127.0.0.1:6379&gt; LRANGE test 0 -1
+1) &quot;aoteman&quot;
+2) &quot;wangwu&quot;
+3) &quot;lisi&quot;
+4) &quot;zhangsan&quot;
+
+//左弹出一条数据
+127.0.0.1:6379&gt; lpop test 1
+1) &quot;lisi&quot;
+
+//右弹出一条数据
+127.0.0.1:6379&gt; rpop test 1
+1) &quot;zhangsan&quot;
+
+//删除组内元素 1 代表数量  222 为元素
+127.0.0.1:6379&gt; lrem test 1 222
+(integer) 1
+
+
+ps: 左边写右边弹出  右边写左边弹 则是那条数据
+</code></pre>
+<h3 id="redis-hash">redis hash</h3>
+<p>redis字符串类型键和值是字典结构形式，这里的散列类型其值也可以是字典结构。</p>
+<pre><code>//写入散列
+127.0.0.1:6379&gt; hset user name javastack
+(integer) 1
+
+//写入多个
+127.0.0.1:6379&gt; hmset user name javastack age 20 address china
+OK
+
+//获取字段
+127.0.0.1:6379&gt; hget user name
+&quot;javastack&quot;
+
+//获取多个
+127.0.0.1:6379&gt; hmget user name age address
+1) &quot;javastack&quot;
+2) &quot;20&quot;
+3) &quot;china&quot;
+
+//获取所有
+127.0.0.1:6379&gt; hkeys user
+1) &quot;name&quot;
+2) &quot;age&quot;
+3) &quot;address&quot;
+
+//判断字段是否存在
+127.0.0.1:6379&gt; HEXISTS user name
+(integer) 1
+
+//获取字段数量
+127.0.0.1:6379&gt; HLEN user
+(integer) 3
+
+//删除字段
+127.0.0.1:6379&gt; HDEL user address
+(integer) 1
+</code></pre>
+<h3 id="使用场景分析">使用场景分析</h3>
+<ul>
+<li>string
+<ul>
+<li>一些简单的数据 存储 比如用户的jwt</li>
+<li>计数器应用</li>
+<li>用户的session</li>
+<li>分布式锁</li>
+</ul>
+</li>
+<li>list
+<ul>
+<li>取最新的N个数</li>
+<li>消息队列</li>
+<li>删除 or 过滤</li>
+<li>分析正在发生的情况 数据统计 分析</li>
+</ul>
+</li>
+<li>集合
+<ul>
+<li>唯一性 比如统计网站访问的独立ip</li>
+<li>共同好友</li>
+<li>赞，踩，标签，好友</li>
+</ul>
+</li>
+<li>有序集合
+<ul>
+<li>排行榜</li>
+<li>过期项目处理</li>
+</ul>
+</li>
+<li>hash
+<ul>
+<li>用户的属性 比如：一个用户的 姓名 年龄 身高</li>
+<li>用户主页访问量、组合查询</li>
+</ul>
+</li>
+</ul>
+<h3 id="简单案例之session存储">简单案例之session存储</h3>
+<pre><code>//用户id 为250的 session 存到redis 并设置过期时间为 3天
+127.0.0.1:6379&gt; set user:250 9d7ddd3db84e6784cc9dc945d6013784 EX 259200 
+OK
+
+//判断用户id 为 250 是否登录
+127.0.0.1:6379&gt; EXISTS user:250
+(integer) 1
+
+//查看过期时间/秒
+127.0.0.1:6379&gt; ttl user:250
+(integer) 259119
+</code></pre>
+<h3 id="简单案例之分布式锁">简单案例之分布式锁</h3>
+<pre><code>//加锁： 加入 NX 即仅在不存在的情况下设置lock_key
+//第一次
+127.0.0.1:6379&gt; set lock_key 9d7ddd3db84e6784cc9dc945d6013784 ex 50 NX
+OK
+//第二次
+127.0.0.1:6379&gt; set lock_key 9d7ddd3db84e6784cc9dc945d6013784 ex 50 NX
+(nil)
+//第三次
+127.0.0.1:6379&gt; set lock_key 9d7ddd3db84e6784cc9dc945d6013784 ex 50 NX
+(nil)
+
+//解锁相对简单：删除即可
+127.0.0.1:6379&gt; del lock_key
+(integer) 1
+</code></pre>
+<h3 id="简单案例之redis事务">简单案例之redis事务</h3>
+<pre><code>//事务说明 MULTI 开启事务  插入 test1  test2 然后exec 事务结束  如果放弃事务则 discard
+127.0.0.1:6379&gt; MULTI
+OK
+127.0.0.1:6379(TX)&gt; set test1 1
+QUEUED
+127.0.0.1:6379(TX)&gt; set test2 2
+QUEUED
+127.0.0.1:6379(TX)&gt; EXEC
+1) OK
+2) OK
+</code></pre>
+<h3 id="简单案例之发布订阅模式">简单案例之发布/订阅模式</h3>
+<pre><code>ps：通过PUBLISH 发布时候  SUBSCRIBE 都能动态的显示出来
+
+//订阅 news
+127.0.0.1:6379&gt; SUBSCRIBE news
+Reading messages... (press Ctrl-C to quit)
+1) &quot;subscribe&quot;         //订阅者
+2) &quot;news&quot;             //频道名称
+3) (integer) 1      //订阅任务
+
+//发布
+127.0.0.1:6379&gt; PUBLISH news heihieheih
+(integer) 1             //次数是几人订阅了
+</code></pre>
+<h3 id="简单案例之任务队列">简单案例之任务队列</h3>
+<p>使用lpush和rpop(brpop)可以实现普通的任务队列。</p>
+<pre><code>首先 写入课程 course_1 course_2 course_3 course_4 course_5
+然后通过 brpop course 10 来获取任务  如果10秒超时 则结束
+
+127.0.0.1:6379&gt; rpush course course_1
+(integer) 1
+127.0.0.1:6379&gt; rpush course course_2
+(integer) 2
+127.0.0.1:6379&gt; rpush course course_3
+(integer) 3
+127.0.0.1:6379&gt; rpush course course_4
+(integer) 4
+127.0.0.1:6379&gt; rpush course course_5
+(integer) 5
+127.0.0.1:6379&gt; brpop course 10
+1) &quot;course&quot;
+2) &quot;course_5&quot;
+127.0.0.1:6379&gt; brpop course 10
+1) &quot;course&quot;
+2) &quot;course_4&quot;
+127.0.0.1:6379&gt; brpop course 10
+1) &quot;course&quot;
+2) &quot;course_3&quot;
+127.0.0.1:6379&gt; brpop course 10
+1) &quot;course&quot;
+2) &quot;course_2&quot;
+127.0.0.1:6379&gt; brpop course 10
+1) &quot;course&quot;
+2) &quot;course_1&quot;
+127.0.0.1:6379&gt; brpop course 10
+(nil)
+(10.05s)
+127.0.0.1:6379&gt; 
+</code></pre>
+<p>//https://blog.csdn.net/u011204847/article/details/51302109</p>
+<h3 id="简单案例之redis管道">简单案例之redis管道</h3>
+<p>请求/响应服务可以实现持续处理新请求，即使客户端没有准备好读取旧响应。这样客户端可以发送多个命令到服务器而无需等待响应，最后在一次读取多个响应。这就是管道化(pipelining)<br>
+redis 管道 命令行中没有  实际是支持的<br>
+通过测试发现 不使用管道 插入 50000条数据  36秒   使用管道 400000  5秒</p>
+<pre><code>s := time.Now().Unix()
+redisClient := redis.NewClient(&amp;redis.Options{
+    Addr:     &quot;xxxxxxxxxxxxxxxxxxxxxxxxxx&quot;,
+    Password: &quot;xxxxxxxxxxxxxxxxxxx&quot;, // no password set
+    DB:       0,  // use default DB
+})
+for i:=0;i&lt;50000;i++{
+    _ = redisClient.Set(context.Background(),fmt.Sprintf(&quot;Aaakey:test%d&quot;,i), &quot;value&quot;,0).Err()
 }
+e := time.Now().Unix()
+fmt.Println(fmt.Sprintf(&quot;相差秒数：%d&quot;,e-s))
+打印进过：36秒
+
+//使用管道代码
+s := time.Now().Unix()
+redisClient := redis.NewClient(&amp;redis.Options{
+    Addr:     &quot;xxxxxxxxxxxxxxxxxxxxxxxxxx&quot;,
+    Password: &quot;xxxxxxxxxxxxxxxxxxx&quot;, // no password set
+    DB:       0,  // use default DB
+})
+//使用管道
+pipeline := redisClient.Pipeline()
+
+for i:=0;i&lt;400000;i++{
+    _ = pipeline.Set(context.Background(), fmt.Sprintf(&quot;Aaakey:test%d&quot;,i), &quot;value&quot;,0).Err()
+}
+_ ,_ = pipeline.Exec(context.Background())
+//for _,v := range cmd{ //查询是否插入成功
+//	if v.Err() != nil {
+//		fmt.Println(&quot;=========&quot;)
+//	}
+//}
+e := time.Now().Unix()
+fmt.Println(fmt.Sprintf(&quot;相差秒数：%d&quot;,e-s))
+打印：5秒
+
 </code></pre>
 
             </div>
@@ -423,7 +1017,7 @@ log.Debug(&quot;test log.Debug&quot;)
     </li>
     <li class="post-copyright-link">
       <strong class="language" data-lan="link">本文链接：</strong>
-      <a href="https://v-micro.github.io/post/da-jian-ri-zhi-xi-tong-efk/" title="搭建日志系统EFK">https://v-micro.github.io/post/da-jian-ri-zhi-xi-tong-efk/</a>
+      <a href="https://v-micro.github.io/post/redis/" title="redis">https://v-micro.github.io/post/redis/</a>
     </li>
     <li class="post-copyright-license">
       <strong class="language" data-lan="copyright">版权声明： </strong>
@@ -436,15 +1030,11 @@ log.Debug(&quot;test log.Debug&quot;)
   <div class="nav">
     <div class="nav-prev">
       
-        <i class="fa fa-chevron-left"></i>
-        <a class="nav-pc-next" title="灰度发布" href="https://v-micro.github.io/post/hui-du-fa-bu/">灰度发布</a class="nav-pc-next">
-        <a class="nav-mobile-prev" title="灰度发布" href="https://v-micro.github.io/post/hui-du-fa-bu/">上一篇</a>
-      
     </div>
     <div class="nav-next">
       
-        <a class="nav-pc-next" title="rabbitmq使用" href="https://v-micro.github.io/post/rabbitmq-shi-yong/">rabbitmq使用</a>
-        <a class="nav-mobile-next" title="rabbitmq使用" href="https://v-micro.github.io/post/rabbitmq-shi-yong/">下一篇</a>
+        <a class="nav-pc-next" title="APP推广篇 - （1）" href="https://v-micro.github.io/post/app-tui-guang-pian-1/">APP推广篇 - （1）</a>
+        <a class="nav-mobile-next" title="APP推广篇 - （1）" href="https://v-micro.github.io/post/app-tui-guang-pian-1/">下一篇</a>
         <i class="fa fa-chevron-right"></i>
       
     </div>

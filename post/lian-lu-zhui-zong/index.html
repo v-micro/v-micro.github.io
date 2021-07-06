@@ -9,7 +9,7 @@
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
 <title>链路追踪 | 蔡小辉</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1625125037004">
+<link rel="shortcut icon" href="/favicon.ico?v=1625536418770">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -186,7 +186,7 @@
     <div class="sidebar-item-box">
       <a href="/archives/">
         
-        <span class="site-item-stat-count">15</span>
+        <span class="site-item-stat-count">16</span>
         <span class="site-item-stat-name language" data-lan="article">文章</span>
       </a>
     </div>
@@ -1531,6 +1531,482 @@ func main()  {
       <hr>
     </div>
     <div class="result" id="result">
+      
+      <div class="item">
+        <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/redis/"" data-c="
+          &lt;p&gt;项目中需要所以从宿主机整理了一份redis 安装大全用做记录。&lt;/p&gt;
+&lt;h3 id=&#34;redis简介&#34;&gt;redis简介&lt;/h3&gt;
+&lt;p&gt;REmote DIctionary Server(Redis) 是一个由 Salvatore Sanfilippo 写的 key-value 存储系统，是跨平台的非关系型数据库。&lt;/p&gt;
+&lt;h3 id=&#34;开始安装&#34;&gt;开始安装&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;//习惯性的吧软件装在/usr/local/
+cd /usr/local/
+//下载nginx
+wget https://download.redis.io/releases/redis-6.2.4.tar.gz
+//解压
+tar -zxvf redis-6.2.4.tar.gz
+//进入目录
+cd redis-6.2.4
+//开始编译
+make
+//make 测试
+make test
+//启动redis
+./redis-server
+
+//redis-cli 是命令行操作
+./redis-cli
+
+//如果需要按照指定配置启动则 
+./redis-server /usr/local/redis-6.2.4/redis.conf
+
+//需要修改密码则需要修改redis.conf
+requirepass 123
+
+//设置密码方法二
+./redis-cli         //进入客户端界面
+config set requirepass 123  //设置密码
+config get requirepass      //查看密码
+
+//默认连接端口
+ip:127.0.0.1   prot: 6379  密码：123
+
+//使用密码登录
+./redis-cli -p 6379 -a redis.redis
+
+//也可以登录进去校验密码
+./redis-cli -p 6379
+auth  123
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;redis基本操作&#34;&gt;redis基本操作&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;官方文档 ：https://redis.io/commands/set
+//模糊搜索
+127.0.0.1:6379&amp;gt; keys tes*
+1) &amp;quot;test&amp;quot;
+
+//获取总数
+127.0.0.1:6379&amp;gt; DBSIZE
+(integer) 3
+
+//判断是否存在
+127.0.0.1:6379&amp;gt; EXISTS social:user:14
+(integer) 1
+
+//删除键
+127.0.0.1:6379&amp;gt; DEL java javastack
+(integer) 1
+
+//查看key周期
+127.0.0.1:6379&amp;gt; TTL social:user:14      //秒
+(integer) 31180
+127.0.0.1:6379&amp;gt; PTTL social:user:14         //毫秒
+(integer) 31053570
+
+//设置key生命周期
+127.0.0.1:6379&amp;gt; EXPIRE javastack 60             //秒
+(integer) 1
+127.0.0.1:6379&amp;gt; PEXPIRE javastack 60             //毫秒
+(integer) 1
+127.0.0.1:6379&amp;gt; PERSIST  javastack           //永不过期
+(integer) 1
+
+//更改键名
+127.0.0.1:6379&amp;gt; RENAME  javastack  javastack2222
+(integer) 1
+
+//获取key类型
+127.0.0.1:6379&amp;gt; type user
+hash
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;redis-字符串&#34;&gt;redis 字符串&lt;/h3&gt;
+&lt;p&gt;说明：字符串是Redis中最基本的数据类型，单个数据能存储的最大空间是512M。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//写入数据
+127.0.0.1:6379&amp;gt; set php 1111
+(integer) 1
+可设置一下参数
+ex 秒
+px 毫秒
+exat 指定过期时间(时间戳)
+pxat 指定过期时间(毫秒)
+例子： set php hello,word exat 1625470391   //指定时间过期
+
+//获取数据
+127.0.0.1:6379&amp;gt; get test
+&amp;quot;1&amp;quot;
+
+//递增/递减  内容不是数字则报错
+127.0.0.1:6379&amp;gt; INCR test
+(integer) 10
+127.0.0.1:6379&amp;gt; DECR test
+(integer) 9
+
+//批量新增
+127.0.0.1:6379&amp;gt; mset test1 1 test2 2 test3 3
+OK
+
+//批量获取
+127.0.0.1:6379&amp;gt; mget test1 test2 test3
+1) &amp;quot;1&amp;quot;
+2) &amp;quot;2&amp;quot;
+3) &amp;quot;3&amp;quot;
+
+//获取字符长度
+127.0.0.1:6379&amp;gt; strlen test1
+(integer) 1
+
+//追加内容
+127.0.0.1:6379&amp;gt; append test1 test
+(integer) 6
+
+//获取指定部分的字符
+127.0.0.1:6379&amp;gt; getrange test1 0 3
+&amp;quot;12te&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;redis-集合&#34;&gt;redis 集合&lt;/h3&gt;
+&lt;p&gt;说明：集合类型和列表类型相似，只不过是集合是无序且不可重复的。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//集合写入
+127.0.0.1:6379&amp;gt; sadd test php go js h5
+(integer) 4
+
+//集合获取
+127.0.0.1:6379&amp;gt; smembers test       //获取所有
+1) &amp;quot;js&amp;quot;
+2) &amp;quot;php&amp;quot;
+3) &amp;quot;go&amp;quot;
+4) &amp;quot;h5&amp;quot;
+
+127.0.0.1:6379&amp;gt; srandmember test 2  //获取指定数量
+1) &amp;quot;js&amp;quot;
+2) &amp;quot;go&amp;quot;
+
+//判断集合是否存在元素
+127.0.0.1:6379&amp;gt; sismember test php
+(integer) 1
+
+//获取元素个数
+127.0.0.1:6379&amp;gt; scard test
+(integer) 4
+
+//删除集合元素
+127.0.0.1:6379&amp;gt; srem test js
+(integer) 1
+
+//弹出集合中的元素(这个操作是无顺序的)
+127.0.0.1:6379&amp;gt; spop test 1
+1) &amp;quot;php&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;redis有序集合&#34;&gt;redis有序集合&lt;/h3&gt;
+&lt;p&gt;和列表的区别&lt;br&gt;
+列表使用链表实现，两头快，中间慢。有序集合是散列表和跳跃表实现的，即使读取中间的元素也比较快。&lt;br&gt;
+列表不能调整元素位置，有序集合能。&lt;br&gt;
+有序集合比列表更占内存。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//有序写入
+127.0.0.1:6379&amp;gt; zadd test 1 zhangsan 2 lisi 3 wangwu 4 hei 5 bai
+(integer) 3
+
+//查询指定member 的分数
+127.0.0.1:6379&amp;gt; ZSCORE test zhangsan
+&amp;quot;1&amp;quot;
+
+//查询列表 （不带分数）
+127.0.0.1:6379&amp;gt; ZRANGE test 0 -1
+1) &amp;quot;zhangsan&amp;quot;
+2) &amp;quot;lisi&amp;quot;
+3) &amp;quot;wangwu&amp;quot;
+4) &amp;quot;hei&amp;quot;
+5) &amp;quot;bai&amp;quot;
+
+//查询列表 带分数  从低到高
+127.0.0.1:6379&amp;gt; ZRANGE test 0 -1 withscores
+ 1) &amp;quot;zhangsan&amp;quot;
+ 2) &amp;quot;1&amp;quot;
+ 3) &amp;quot;lisi&amp;quot;
+ 4) &amp;quot;2&amp;quot;
+ 5) &amp;quot;wangwu&amp;quot;
+ 6) &amp;quot;3&amp;quot;
+ 7) &amp;quot;hei&amp;quot;
+ 8) &amp;quot;4&amp;quot;
+ 9) &amp;quot;bai&amp;quot;
+10) &amp;quot;5&amp;quot;
+//查询列表 带分数  从高到低
+127.0.0.1:6379&amp;gt; ZREVRANGE test 0 -1 withscores
+1) &amp;quot;zhangsan&amp;quot;
+2) &amp;quot;10&amp;quot;
+3) &amp;quot;bai&amp;quot;
+4) &amp;quot;5&amp;quot;
+5) &amp;quot;wangwu&amp;quot;
+6) &amp;quot;3&amp;quot;
+7) &amp;quot;lisi&amp;quot;
+8) &amp;quot;2&amp;quot;
+
+//获取指定范围分数的数据
+127.0.0.1:6379&amp;gt; zrangebyscore test 3 5
+1) &amp;quot;wangwu&amp;quot;
+2) &amp;quot;hei&amp;quot;
+3) &amp;quot;bai&amp;quot;
+
+
+//增加 元素分数
+127.0.0.1:6379&amp;gt; ZINCRBY test 10 hei
+&amp;quot;15&amp;quot;
+
+//获取总数
+127.0.0.1:6379&amp;gt; zcard test 
+(integer) 5
+
+//统计范围分数内的数据
+127.0.0.1:6379&amp;gt; ZCOUNT test 1 10
+(integer) 4
+
+//删除指定元素
+127.0.0.1:6379&amp;gt; ZREM test hei
+(integer) 1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;redis列表&#34;&gt;redis列表&lt;/h3&gt;
+&lt;p&gt;列表类型是一个有序的字段串列表，内部是使用双向链表实现，所有可以向两端操作元素，获取两端的数据速度快，通过索引到具体的行数比较慢。列表类型的元素是有序且可以重复的。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//左存列表
+127.0.0.1:6379&amp;gt; lpush test zhangsan lisi wangwu aoteman
+(integer) 4
+
+//右存列表
+127.0.0.1:6379&amp;gt; rpush test zhangsan lisi wangwu aoteman
+(integer) 4
+
+//获取总元素
+127.0.0.1:6379&amp;gt; LLEN test 
+(integer) 4
+
+//获取所有
+127.0.0.1:6379&amp;gt; LRANGE test 0 -1
+1) &amp;quot;aoteman&amp;quot;
+2) &amp;quot;wangwu&amp;quot;
+3) &amp;quot;lisi&amp;quot;
+4) &amp;quot;zhangsan&amp;quot;
+
+//左弹出一条数据
+127.0.0.1:6379&amp;gt; lpop test 1
+1) &amp;quot;lisi&amp;quot;
+
+//右弹出一条数据
+127.0.0.1:6379&amp;gt; rpop test 1
+1) &amp;quot;zhangsan&amp;quot;
+
+//删除组内元素 1 代表数量  222 为元素
+127.0.0.1:6379&amp;gt; lrem test 1 222
+(integer) 1
+
+
+ps: 左边写右边弹出  右边写左边弹 则是那条数据
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;redis-hash&#34;&gt;redis hash&lt;/h3&gt;
+&lt;p&gt;redis字符串类型键和值是字典结构形式，这里的散列类型其值也可以是字典结构。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//写入散列
+127.0.0.1:6379&amp;gt; hset user name javastack
+(integer) 1
+
+//写入多个
+127.0.0.1:6379&amp;gt; hmset user name javastack age 20 address china
+OK
+
+//获取字段
+127.0.0.1:6379&amp;gt; hget user name
+&amp;quot;javastack&amp;quot;
+
+//获取多个
+127.0.0.1:6379&amp;gt; hmget user name age address
+1) &amp;quot;javastack&amp;quot;
+2) &amp;quot;20&amp;quot;
+3) &amp;quot;china&amp;quot;
+
+//获取所有
+127.0.0.1:6379&amp;gt; hkeys user
+1) &amp;quot;name&amp;quot;
+2) &amp;quot;age&amp;quot;
+3) &amp;quot;address&amp;quot;
+
+//判断字段是否存在
+127.0.0.1:6379&amp;gt; HEXISTS user name
+(integer) 1
+
+//获取字段数量
+127.0.0.1:6379&amp;gt; HLEN user
+(integer) 3
+
+//删除字段
+127.0.0.1:6379&amp;gt; HDEL user address
+(integer) 1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;使用场景分析&#34;&gt;使用场景分析&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;string
+&lt;ul&gt;
+&lt;li&gt;一些简单的数据 存储 比如用户的jwt&lt;/li&gt;
+&lt;li&gt;计数器应用&lt;/li&gt;
+&lt;li&gt;用户的session&lt;/li&gt;
+&lt;li&gt;分布式锁&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;list
+&lt;ul&gt;
+&lt;li&gt;取最新的N个数&lt;/li&gt;
+&lt;li&gt;消息队列&lt;/li&gt;
+&lt;li&gt;删除 or 过滤&lt;/li&gt;
+&lt;li&gt;分析正在发生的情况 数据统计 分析&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;集合
+&lt;ul&gt;
+&lt;li&gt;唯一性 比如统计网站访问的独立ip&lt;/li&gt;
+&lt;li&gt;共同好友&lt;/li&gt;
+&lt;li&gt;赞，踩，标签，好友&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;有序集合
+&lt;ul&gt;
+&lt;li&gt;排行榜&lt;/li&gt;
+&lt;li&gt;过期项目处理&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;hash
+&lt;ul&gt;
+&lt;li&gt;用户的属性 比如：一个用户的 姓名 年龄 身高&lt;/li&gt;
+&lt;li&gt;用户主页访问量、组合查询&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;简单案例之session存储&#34;&gt;简单案例之session存储&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;//用户id 为250的 session 存到redis 并设置过期时间为 3天
+127.0.0.1:6379&amp;gt; set user:250 9d7ddd3db84e6784cc9dc945d6013784 EX 259200 
+OK
+
+//判断用户id 为 250 是否登录
+127.0.0.1:6379&amp;gt; EXISTS user:250
+(integer) 1
+
+//查看过期时间/秒
+127.0.0.1:6379&amp;gt; ttl user:250
+(integer) 259119
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;简单案例之分布式锁&#34;&gt;简单案例之分布式锁&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;//加锁： 加入 NX 即仅在不存在的情况下设置lock_key
+//第一次
+127.0.0.1:6379&amp;gt; set lock_key 9d7ddd3db84e6784cc9dc945d6013784 ex 50 NX
+OK
+//第二次
+127.0.0.1:6379&amp;gt; set lock_key 9d7ddd3db84e6784cc9dc945d6013784 ex 50 NX
+(nil)
+//第三次
+127.0.0.1:6379&amp;gt; set lock_key 9d7ddd3db84e6784cc9dc945d6013784 ex 50 NX
+(nil)
+
+//解锁相对简单：删除即可
+127.0.0.1:6379&amp;gt; del lock_key
+(integer) 1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;简单案例之redis事务&#34;&gt;简单案例之redis事务&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;//事务说明 MULTI 开启事务  插入 test1  test2 然后exec 事务结束  如果放弃事务则 discard
+127.0.0.1:6379&amp;gt; MULTI
+OK
+127.0.0.1:6379(TX)&amp;gt; set test1 1
+QUEUED
+127.0.0.1:6379(TX)&amp;gt; set test2 2
+QUEUED
+127.0.0.1:6379(TX)&amp;gt; EXEC
+1) OK
+2) OK
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;简单案例之发布订阅模式&#34;&gt;简单案例之发布/订阅模式&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;ps：通过PUBLISH 发布时候  SUBSCRIBE 都能动态的显示出来
+
+//订阅 news
+127.0.0.1:6379&amp;gt; SUBSCRIBE news
+Reading messages... (press Ctrl-C to quit)
+1) &amp;quot;subscribe&amp;quot;         //订阅者
+2) &amp;quot;news&amp;quot;             //频道名称
+3) (integer) 1      //订阅任务
+
+//发布
+127.0.0.1:6379&amp;gt; PUBLISH news heihieheih
+(integer) 1             //次数是几人订阅了
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;简单案例之任务队列&#34;&gt;简单案例之任务队列&lt;/h3&gt;
+&lt;p&gt;使用lpush和rpop(brpop)可以实现普通的任务队列。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;首先 写入课程 course_1 course_2 course_3 course_4 course_5
+然后通过 brpop course 10 来获取任务  如果10秒超时 则结束
+
+127.0.0.1:6379&amp;gt; rpush course course_1
+(integer) 1
+127.0.0.1:6379&amp;gt; rpush course course_2
+(integer) 2
+127.0.0.1:6379&amp;gt; rpush course course_3
+(integer) 3
+127.0.0.1:6379&amp;gt; rpush course course_4
+(integer) 4
+127.0.0.1:6379&amp;gt; rpush course course_5
+(integer) 5
+127.0.0.1:6379&amp;gt; brpop course 10
+1) &amp;quot;course&amp;quot;
+2) &amp;quot;course_5&amp;quot;
+127.0.0.1:6379&amp;gt; brpop course 10
+1) &amp;quot;course&amp;quot;
+2) &amp;quot;course_4&amp;quot;
+127.0.0.1:6379&amp;gt; brpop course 10
+1) &amp;quot;course&amp;quot;
+2) &amp;quot;course_3&amp;quot;
+127.0.0.1:6379&amp;gt; brpop course 10
+1) &amp;quot;course&amp;quot;
+2) &amp;quot;course_2&amp;quot;
+127.0.0.1:6379&amp;gt; brpop course 10
+1) &amp;quot;course&amp;quot;
+2) &amp;quot;course_1&amp;quot;
+127.0.0.1:6379&amp;gt; brpop course 10
+(nil)
+(10.05s)
+127.0.0.1:6379&amp;gt; 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;//https://blog.csdn.net/u011204847/article/details/51302109&lt;/p&gt;
+&lt;h3 id=&#34;简单案例之redis管道&#34;&gt;简单案例之redis管道&lt;/h3&gt;
+&lt;p&gt;请求/响应服务可以实现持续处理新请求，即使客户端没有准备好读取旧响应。这样客户端可以发送多个命令到服务器而无需等待响应，最后在一次读取多个响应。这就是管道化(pipelining)&lt;br&gt;
+redis 管道 命令行中没有  实际是支持的&lt;br&gt;
+通过测试发现 不使用管道 插入 50000条数据  36秒   使用管道 400000  5秒&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;s := time.Now().Unix()
+redisClient := redis.NewClient(&amp;amp;redis.Options{
+    Addr:     &amp;quot;xxxxxxxxxxxxxxxxxxxxxxxxxx&amp;quot;,
+    Password: &amp;quot;xxxxxxxxxxxxxxxxxxx&amp;quot;, // no password set
+    DB:       0,  // use default DB
+})
+for i:=0;i&amp;lt;50000;i++{
+    _ = redisClient.Set(context.Background(),fmt.Sprintf(&amp;quot;Aaakey:test%d&amp;quot;,i), &amp;quot;value&amp;quot;,0).Err()
+}
+e := time.Now().Unix()
+fmt.Println(fmt.Sprintf(&amp;quot;相差秒数：%d&amp;quot;,e-s))
+打印进过：36秒
+
+//使用管道代码
+s := time.Now().Unix()
+redisClient := redis.NewClient(&amp;amp;redis.Options{
+    Addr:     &amp;quot;xxxxxxxxxxxxxxxxxxxxxxxxxx&amp;quot;,
+    Password: &amp;quot;xxxxxxxxxxxxxxxxxxx&amp;quot;, // no password set
+    DB:       0,  // use default DB
+})
+//使用管道
+pipeline := redisClient.Pipeline()
+
+for i:=0;i&amp;lt;400000;i++{
+    _ = pipeline.Set(context.Background(), fmt.Sprintf(&amp;quot;Aaakey:test%d&amp;quot;,i), &amp;quot;value&amp;quot;,0).Err()
+}
+_ ,_ = pipeline.Exec(context.Background())
+//for _,v := range cmd{ //查询是否插入成功
+//	if v.Err() != nil {
+//		fmt.Println(&amp;quot;=========&amp;quot;)
+//	}
+//}
+e := time.Now().Unix()
+fmt.Println(fmt.Sprintf(&amp;quot;相差秒数：%d&amp;quot;,e-s))
+打印：5秒
+
+&lt;/code&gt;&lt;/pre&gt;
+">redis</a>
+      </div>
       
       <div class="item">
         <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/app-tui-guang-pian-1/"" data-c="
