@@ -9,7 +9,7 @@
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
 <title>搭建日志系统EFK | 蔡小辉</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1625562668233">
+<link rel="shortcut icon" href="/favicon.ico?v=1626421373264">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -186,7 +186,7 @@
     <div class="sidebar-item-box">
       <a href="/archives/">
         
-        <span class="site-item-stat-count">16</span>
+        <span class="site-item-stat-count">17</span>
         <span class="site-item-stat-name language" data-lan="article">文章</span>
       </a>
     </div>
@@ -1438,6 +1438,50 @@ log.Debug(&quot;test log.Debug&quot;)
       <hr>
     </div>
     <div class="result" id="result">
+      
+      <div class="item">
+        <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/linux-crontab-ding-shi-ren-wu/"" data-c="
+          &lt;p&gt;Linux crontab是用来定期执行程序的命令。当安装完成操作系统之后，默认便会启动此任务调度命令。crond 命令每分锺会定期检查是否有要执行的工作，如果有要执行的工作便会自动执行该工作。&lt;/p&gt;
+&lt;h3 id=&#34;语法说明&#34;&gt;语法说明&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;*    *    *    *    *    
+-    -    -    -    -  
+|    |    |    |    |      
+|    |    |    |    +----- 星期中星期几 (0 - 6) (星期天 为0)
+|    |    |    +---------- 月份 (1 - 12) 
+|    |    +--------------- 一个月中的第几天 (1 - 31)
+|    +-------------------- 小时 (0 - 23)
++------------------------- 分钟 (0 - 59)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;简单的示例&#34;&gt;简单的示例&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;//每一分钟执行一次  /bin/ls
+* * * * * /bin/ls
+
+//在 12 月内, 每天的早上 6 点到 12 点，每隔 3 个小时 0 分钟执行一次 /usr/bin/backup：
+0 6-12/3 * 12 * /usr/bin/backup
+
+//周一到周五每天下午 5:00 寄一封信给 alex@domain.name：
+0 17 * * 1-5 mail -s &amp;quot;hi&amp;quot; alex@domain.name &amp;lt; /tmp/maildata
+
+//每月每天的午夜 0 点 20 分, 2 点 20 分, 4 点 20 分....执行 echo &amp;quot;haha&amp;quot;：
+20 0-23/2 * * * echo &amp;quot;haha&amp;quot;
+
+//每两个小时重启一次apache 
+0 */2 * * * /sbin/service httpd restart  意思是每两个小时重启一次apache 
+
+//意思是每天7：50开启ssh服务 
+50 7 * * * /sbin/service sshd start
+
+// 意思是每天22：50关闭ssh服务 
+50 22 * * * /sbin/service sshd stop 
+
+//每月1号和15号检查/home 磁盘 
+0 0 1,15 * * fsck /home  
+
+//每小时的第一分执行 /home/bruce/backup这个文件 
+1 * * * * /home/bruce/backup  
+&lt;/code&gt;&lt;/pre&gt;
+">linux crontab定时任务</a>
+      </div>
       
       <div class="item">
         <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/redis/"" data-c="
