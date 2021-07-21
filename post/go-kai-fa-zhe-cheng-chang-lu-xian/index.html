@@ -8,7 +8,7 @@
 <meta name="keywords" content="吃的苦中苦，方能开路虎">
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
-<title>docker快速构建 | 蔡小辉</title>
+<title>go 开发者成长路线 | 蔡小辉</title>
 <link rel="shortcut icon" href="/favicon.ico?v=1626853976441">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
@@ -41,8 +41,8 @@
 
 
 
-  <meta name="description" content="docker快速构建" />
-  <meta name="keywords" content="docker" />
+  <meta name="description" content="go 开发者成长路线" />
+  <meta name="keywords" content="" />
 </head>
 
 <body>
@@ -300,113 +300,281 @@
           <div class="section bg-color post post-page">
             <section class="post-header">
   <h1 class="post-title">
-    <a class="post-title-link" href="https://v-micro.github.io/post/kuai-su-gou-jian/">
-      docker快速构建
+    <a class="post-title-link" href="https://v-micro.github.io/post/go-kai-fa-zhe-cheng-chang-lu-xian/">
+      go 开发者成长路线
     </a>
   </h1>
   <div class="post-meta">
     
-    <span class="meta-item">
-      <i class="fa fa-thumb-tack"></i>
-      <span class="language" data-lan="top">置顶</span>
-      <span class="post-meta-divider">|</span>
-    </span>
-    
     <span class="meta-item pc-show">
       <i class="fa fa-calendar-o"></i>
       <span class="language" data-lan="publish">发布于</span>
-      <span class="publish-time" data-t="2021-06-21 11:16:06">2021-06-21</span>
+      <span class="publish-time" data-t="2021-07-21 11:26:09">2021-07-21</span>
       <span class="post-meta-divider pc-show">|</span>
     </span>
     
     <span class="meta-item">
-      <i class="fa fa-folder-o"></i>
-      <span class="pc-show language" data-lan="category-in">分类于</span>
-      
-      
-      <a href="https://v-micro.github.io/tag/vIhmmPyV4/">
-        <span>docker</span>
-      </a>
-      
-      
-    </span>
-    <span class="post-meta-divider">|</span>
-    
-    <span class="meta-item">
       <i class="fa fa-clock-o"></i>
-      <span>3<span class="language" data-lan="minute">分钟</span></span>
+      <span>2<span class="language" data-lan="minute">分钟</span></span>
     </span>
     <span class="meta-item">
       <span class="post-meta-divider">|</span>
       <i class="fa fa-file-word-o"></i>
-      <span>471<span class="pc-show language" data-lan="words">字数</span></span>
+      <span>358<span class="pc-show language" data-lan="words">字数</span></span>
     </span>
     
   </div>
 </section>
             <div class="post-body next-md-body" id="post_body">
-              <p>项目使用中，快速构建出常用的一些应用服务</p>
-<pre><code>//下载docker镜像
-docker pull redis
-//启动redis 并设置密码为123456
-docker run -d --name myredis -p 6379:6379 redis --requirepass &quot;123456&quot;
-</code></pre>
-<p>快速构建mysql</p>
-<pre><code>//下载mysql 5.7
-docker pull mysql:5.7 
-//运行mysql镜像
-docker run -p 52313:3306 --name mysql -e MYSQL_ROOT_PASSWORD=helloworidphp -d mysql:5.7
-</code></pre>
-<p>快速构建rabbitmq</p>
-<pre><code>//下载rabbitmq  management带访问界面
-docker pull rabbitmq:management
-//运行镜像
-docker run -d --privileged=true --name my_rabbitmq -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=admin -p 15672:15672 -p 5672:5672 rabbitmq:management
-</code></pre>
-<p>快速构建nginx</p>
-<pre><code>//下载镜像
-docker pull nginx
-//运行镜像
-docker run -d -p 81:80 --name some-nginx81 some-content-nginx
-//拷贝静态资源文件到镜像
-docker cp index.html a4274a5e3589:/usr/share/nginx/html/index.html
-
-//配置文件本地
-docker run --name nginx -p 80:80 -v /home/docker-nginx/nginx.conf:/etc/nginx/nginx.conf -v /home/docker-nginx/log:/var/log/nginx -v /home/docker-nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf -d nginx
-</code></pre>
-<p>快速构建registry私有库</p>
-<pre><code>//下载镜像包
-docker pull registry:latest
-
-//运行镜像并配置宿主机镜像位置
-//镜像存储目录/opt/data/registry
-docker run -d --name=MyRegistry -p 5001:5000 -v /opt/data/registry:/tmp/registry registry:latest
-</code></pre>
-<p>快速构建elasticsearch</p>
-<pre><code>//下载镜像
-docker pull elasticsearch:7.10.1
-//运行镜像
-docker run -d -p 9200:9200 -p 9300:9300 --privileged=true -e &quot;discovery.type=single-node&quot; --name MyElasticsearch elasticsearch:7.10.1
-//端口解释
-# 9200 主要用于外部 http通讯
-# 9300 作为tcp协议 es集群就是通过9300通讯
-//报错解决
--e &quot;ES_JAVA_OPTS=-Xms64m -Xmx251m&quot;
-</code></pre>
-<p>快速构建kibana</p>
-<pre><code>//下载镜像
-docker pull kibana:7.10.1
-//运行镜像
-docker run -d -p 5601:5601 --net=host --name MyKibana kibana:7.10.1
-//运行kibana 并连接es
-docker run -d -p 5601:5601 --net=host --name MyKibana -e ELASTICSEARCH_URL=http://127.0.0.1:9200 kibana:7.10.1
-//如法加载则
-修改镜像配置然后重启
-//配置
-vim  /usr/share/kibana/config/kibana.yml
-elasticsearch.hosts: [ &quot;http://127.0.0.1:9200&quot; ]     es 端口
-i18n.locale: &quot;zh-CN&quot;    //设置中文
-</code></pre>
+              <p>Go 是一个开源的编程语言，它能让构造简单、可靠且高效的软件变得容易。</p>
+<ul>
+<li>
+<p>go</p>
+<ul>
+<li>go 命令操作</li>
+<li>变量、常量、类型、函数、包等等</li>
+<li>数组&amp;切片</li>
+<li>指针、结构、方法</li>
+<li>接口</li>
+<li>协成、、通道、缓存区、选择(Select)、互斥锁(Mutex)</li>
+<li>严重、异常、回复</li>
+<li>基础sql 语法</li>
+</ul>
+</li>
+<li>
+<p>go 模组</p>
+<ul>
+<li>go 依赖管理工具</li>
+<li>语义版本控制</li>
+<li>版本、脚本、存储库</li>
+</ul>
+</li>
+<li>
+<p>sql 基础原理</p>
+<ul>
+<li>sql 基础语法</li>
+</ul>
+</li>
+<li>
+<p>基本开发技能</p>
+<ul>
+<li>git</li>
+<li>http/https</li>
+<li>数据结构和算法</li>
+<li>scrum、看板或者其他项目策略</li>
+<li>基本authentication、oauth、jwt等</li>
+<li>SOLID、YAGNI、KISS</li>
+</ul>
+</li>
+<li>
+<p>命令行界面</p>
+<ul>
+<li>cobra</li>
+<li>urfave/cli</li>
+</ul>
+</li>
+<li>
+<p>网页框架+路由</p>
+<ul>
+<li>Echo</li>
+<li>Beego</li>
+<li>Gin</li>
+<li>Revel</li>
+<li>Chi</li>
+</ul>
+</li>
+<li>
+<p>对象关系映射</p>
+<ul>
+<li>Gorm</li>
+<li>Xorm</li>
+</ul>
+</li>
+<li>
+<p>数据库</p>
+<ul>
+<li>关系数据库
+<ul>
+<li>SQL server</li>
+<li>mySql</li>
+<li>mariaDB</li>
+<li>postgreSQL</li>
+<li>cockroachDb</li>
+</ul>
+</li>
+<li>云数据库
+<ul>
+<li>Azure CosmosDB</li>
+<li>Amazon DynamoDB</li>
+</ul>
+</li>
+<li>NoSql
+<ul>
+<li>MongoDB</li>
+<li>Redis</li>
+<li>LiteDB</li>
+<li>Apache Cassandra</li>
+<li>RavenDB</li>
+<li>CouchDB</li>
+</ul>
+</li>
+<li>搜索引擎
+<ul>
+<li>elasticsearch</li>
+<li>Solr</li>
+<li>Sphinx</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>高速缓存</p>
+<ul>
+<li>Gcache</li>
+<li>分布式缓存
+<ul>
+<li>Go-redis</li>
+<li>GoMemcache</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>日志框架</p>
+<ul>
+<li>日志管理系统
+<ul>
+<li>sentry.io</li>
+<li>loggly.com</li>
+</ul>
+</li>
+<li>Zap</li>
+<li>ZeroLog</li>
+<li>Logrus</li>
+</ul>
+</li>
+<li>
+<p>实时通讯</p>
+<ul>
+<li>Melody</li>
+<li>Centrifugo</li>
+</ul>
+</li>
+<li>
+<p>Api客户端</p>
+<ul>
+<li>GraphQL
+<ul>
+<li>graphql-go</li>
+<li>gplgen</li>
+</ul>
+</li>
+<li>REST
+<ul>
+<li>Gentleman</li>
+<li>GRequests</li>
+<li>Heimdall</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>测试</p>
+<ul>
+<li>单元测试
+<ul>
+<li>模拟
+<ul>
+<li>GoMock</li>
+</ul>
+</li>
+<li>框架
+<ul>
+<li>Testify</li>
+<li>Ginkgo</li>
+<li>GoMega</li>
+<li>GoCheck</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>行为测试
+<ul>
+<li>GoDog</li>
+<li>GoConvey</li>
+<li>GinkGo</li>
+</ul>
+</li>
+<li>集成测试
+<ul>
+<li>Testify</li>
+<li>GinkGo</li>
+</ul>
+</li>
+<li>端对端测试
+<ul>
+<li>Endly</li>
+<li>Selenium</li>
+</ul>
+</li>
+<li>最好知道的库
+<ul>
+<li>Validator</li>
+<li>Glow</li>
+<li>Gjson</li>
+<li>Authboss</li>
+<li>Go-uunderscore</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>微服务</p>
+<ul>
+<li>消息代理
+<ul>
+<li>RabbitMq</li>
+<li>Apache Kafka</li>
+<li>ActiveMq</li>
+<li>Azure Server Bus</li>
+</ul>
+</li>
+<li>消息总线
+<ul>
+<li>Message-Bus</li>
+</ul>
+</li>
+<li>框架
+<ul>
+<li>Go-Kit</li>
+<li>Micro</li>
+<li>rpcx</li>
+<li>istio</li>
+</ul>
+</li>
+<li>RPC
+<ul>
+<li>Protocol Buffers</li>
+<li>gRPC-go</li>
+<li>gRPC-gateway</li>
+<li>Twirp</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>go模式</p>
+<ul>
+<li>Creational</li>
+<li>Structrul</li>
+<li>Behavioral</li>
+<li>synchronization</li>
+<li>Concurrency</li>
+<li>Messaging</li>
+<li>Stability</li>
+</ul>
+</li>
+</ul>
 
             </div>
             
@@ -419,7 +587,7 @@ i18n.locale: &quot;zh-CN&quot;    //设置中文
     </li>
     <li class="post-copyright-link">
       <strong class="language" data-lan="link">本文链接：</strong>
-      <a href="https://v-micro.github.io/post/kuai-su-gou-jian/" title="docker快速构建">https://v-micro.github.io/post/kuai-su-gou-jian/</a>
+      <a href="https://v-micro.github.io/post/go-kai-fa-zhe-cheng-chang-lu-xian/" title="go 开发者成长路线">https://v-micro.github.io/post/go-kai-fa-zhe-cheng-chang-lu-xian/</a>
     </li>
     <li class="post-copyright-license">
       <strong class="language" data-lan="copyright">版权声明： </strong>
@@ -428,18 +596,20 @@ i18n.locale: &quot;zh-CN&quot;    //设置中文
   </ul>
   <div class="tags">
     
-      <a href="https://v-micro.github.io/tag/vIhmmPyV4/"># docker</a>
-    
   </div>
   <div class="nav">
     <div class="nav-prev">
       
         <i class="fa fa-chevron-left"></i>
-        <a class="nav-pc-next" title="docker私有镜像库搭建" href="https://v-micro.github.io/post/docker-si-you-jing-xiang-ku-da-jian/">docker私有镜像库搭建</a class="nav-pc-next">
-        <a class="nav-mobile-prev" title="docker私有镜像库搭建" href="https://v-micro.github.io/post/docker-si-you-jing-xiang-ku-da-jian/">上一篇</a>
+        <a class="nav-pc-next" title="ios 开发者成长路线" href="https://v-micro.github.io/post/ios-kai-fa-zhe-cheng-chang-lu-xian/">ios 开发者成长路线</a class="nav-pc-next">
+        <a class="nav-mobile-prev" title="ios 开发者成长路线" href="https://v-micro.github.io/post/ios-kai-fa-zhe-cheng-chang-lu-xian/">上一篇</a>
       
     </div>
     <div class="nav-next">
+      
+        <a class="nav-pc-next" title="nginx常用配置技法" href="https://v-micro.github.io/post/nginx-chang-yong-pei-zhi-ji-fa/">nginx常用配置技法</a>
+        <a class="nav-mobile-next" title="nginx常用配置技法" href="https://v-micro.github.io/post/nginx-chang-yong-pei-zhi-ji-fa/">下一篇</a>
+        <i class="fa fa-chevron-right"></i>
       
     </div>
   </div>
