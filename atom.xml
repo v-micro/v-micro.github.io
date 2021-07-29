@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://v-micro.github.io</id>
     <title>蔡小辉</title>
-    <updated>2021-07-29T08:39:41.332Z</updated>
+    <updated>2021-07-29T08:40:42.236Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://v-micro.github.io"/>
     <link rel="self" href="https://v-micro.github.io/atom.xml"/>
@@ -10,6 +10,13 @@
     <logo>https://v-micro.github.io/images/avatar.png</logo>
     <icon>https://v-micro.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, 蔡小辉</rights>
+    <entry>
+        <title type="html"><![CDATA[jenkins 操作部署]]></title>
+        <id>https://v-micro.github.io/post/jenkins-cao-zuo-bu-shu/</id>
+        <link href="https://v-micro.github.io/post/jenkins-cao-zuo-bu-shu/">
+        </link>
+        <updated>2021-07-29T08:39:59.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[go 请求转发]]></title>
         <id>https://v-micro.github.io/post/go-qing-qiu-zhuan-fa/</id>
@@ -72,12 +79,5 @@
         <link href="https://v-micro.github.io/post/ios-nei-gou-go-ban-ben/">
         </link>
         <updated>2021-06-29T09:41:11.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[加密算法总结]]></title>
-        <id>https://v-micro.github.io/post/jia-mi-suan-fa-zong-jie/</id>
-        <link href="https://v-micro.github.io/post/jia-mi-suan-fa-zong-jie/">
-        </link>
-        <updated>2021-06-28T08:49:00.000Z</updated>
     </entry>
 </feed>
