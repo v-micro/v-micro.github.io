@@ -9,7 +9,7 @@
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
 <title>nginx过滤sql注入和溢出 | 蔡小辉</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1632739887804">
+<link rel="shortcut icon" href="/favicon.ico?v=1632740226210">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -229,6 +229,7 @@
 <li><a href="#%E6%96%87%E4%BB%B6%E6%B3%A8%E5%85%A5%E7%A6%81%E6%AD%A2">文件注入禁止</a></li>
 <li><a href="#%E6%BA%A2%E5%87%BA%E6%94%BB%E5%87%BB%E8%BF%87%E6%BB%A4">溢出攻击过滤</a></li>
 <li><a href="#spam%E5%AD%97%E6%AE%B5%E8%BF%87%E6%BB%A4">spam字段过滤</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8lua%E6%9D%A5%E8%BF%9B%E8%A1%8Cget-post-%E5%8F%82%E6%95%B0%E8%BF%87%E6%BB%A4">使用Lua来进行get post 参数过滤</a></li>
 </ul>
 </li>
 </ul>
@@ -513,12 +514,12 @@
     
     <span class="meta-item">
       <i class="fa fa-clock-o"></i>
-      <span>3<span class="language" data-lan="minute">分钟</span></span>
+      <span>4<span class="language" data-lan="minute">分钟</span></span>
     </span>
     <span class="meta-item">
       <span class="post-meta-divider">|</span>
       <i class="fa fa-file-word-o"></i>
-      <span>410<span class="pc-show language" data-lan="words">字数</span></span>
+      <span>596<span class="pc-show language" data-lan="words">字数</span></span>
     </span>
     
   </div>
@@ -638,6 +639,39 @@ if ($http_user_agent ~ “GrabNet”) {
 if ($block_user_agents = 1) {
     return 444;
 }
+}
+</code></pre>
+<h3 id="使用lua来进行get-post-参数过滤">使用Lua来进行get post 参数过滤</h3>
+<pre><code>location / {
+    #root html;
+    #index index.html index.htm;
+
+    default_type text/html;
+    #打开 lua 允许使用这种方式来获取请求数据
+    lua_need_request_body on;
+    access_by_lua_block {
+        #获取 post请求数据
+        local body = ngx.var.request_body
+        #获取 get请求数据
+        local query = ngx.var.query_string
+        #正则表达式
+        local regex = &quot;(.*?((select)|(from)|(count)|(delete)|(update)|(drop)|(truncate)).*?){1,}&quot;
+        #匹配post参数
+        local m,err = ngx.re.match(body, regex)
+        #匹配get参数
+        local n,err = ngx.re.match(query, regex)
+        #做get或者post校验
+        if m then
+            #返回数据 (二选一)
+            ngx.say('{&quot;code&quot;: 999,&quot;msg&quot;: &quot;传参异常&quot;,&quot;ok&quot;: false,&quot;runningTime&quot;: &quot;0ms&quot;}')
+            #返回页面
+            #ngx.exit(404)
+        end
+    }
+    #设置日志
+    access_log logs/host.access.log json_log;
+    #转换应用服务ip和端口
+    proxy_pass http://127.0.0.1:8081;
 }
 </code></pre>
 
@@ -1780,6 +1814,39 @@ if ($http_user_agent ~ “GrabNet”) {
 if ($block_user_agents = 1) {
     return 444;
 }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;使用lua来进行get-post-参数过滤&#34;&gt;使用Lua来进行get post 参数过滤&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;location / {
+    #root html;
+    #index index.html index.htm;
+
+    default_type text/html;
+    #打开 lua 允许使用这种方式来获取请求数据
+    lua_need_request_body on;
+    access_by_lua_block {
+        #获取 post请求数据
+        local body = ngx.var.request_body
+        #获取 get请求数据
+        local query = ngx.var.query_string
+        #正则表达式
+        local regex = &amp;quot;(.*?((select)|(from)|(count)|(delete)|(update)|(drop)|(truncate)).*?){1,}&amp;quot;
+        #匹配post参数
+        local m,err = ngx.re.match(body, regex)
+        #匹配get参数
+        local n,err = ngx.re.match(query, regex)
+        #做get或者post校验
+        if m then
+            #返回数据 (二选一)
+            ngx.say(&#39;{&amp;quot;code&amp;quot;: 999,&amp;quot;msg&amp;quot;: &amp;quot;传参异常&amp;quot;,&amp;quot;ok&amp;quot;: false,&amp;quot;runningTime&amp;quot;: &amp;quot;0ms&amp;quot;}&#39;)
+            #返回页面
+            #ngx.exit(404)
+        end
+    }
+    #设置日志
+    access_log logs/host.access.log json_log;
+    #转换应用服务ip和端口
+    proxy_pass http://127.0.0.1:8081;
 }
 &lt;/code&gt;&lt;/pre&gt;
 ">nginx过滤sql注入和溢出</a>
