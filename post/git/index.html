@@ -9,7 +9,7 @@
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
 <title>Git | 蔡小辉</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1627549386120">
+<link rel="shortcut icon" href="/favicon.ico?v=1632739887804">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -186,7 +186,7 @@
     <div class="sidebar-item-box">
       <a href="/archives/">
         
-        <span class="site-item-stat-count">22</span>
+        <span class="site-item-stat-count">23</span>
         <span class="site-item-stat-name language" data-lan="article">文章</span>
       </a>
     </div>
@@ -1521,6 +1521,127 @@ chown git:git -R /home/www/newproject
       <hr>
     </div>
     <div class="result" id="result">
+      
+      <div class="item">
+        <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/nginx-guo-lu-sql-zhu-ru-he-yi-chu/"" data-c="
+          &lt;p&gt;代码不可能是全完美的，动态网页在实用中难免会遇到sql注入的攻击。而通过nginx的配置过滤，可以很好的避免被攻击的可能。SQL注入攻击一般问号后面的请求参数，在nginx里用$query_string表示&lt;/p&gt;
+&lt;h3 id=&#34;特殊字符过滤&#34;&gt;特殊字符过滤&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;if ( $query_string ~* &amp;quot;.*[;&#39;&amp;lt;&amp;gt;].*&amp;quot; ) {
+    return 404;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;sql语句过滤&#34;&gt;sql语句过滤&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;if ($request_uri ~* &amp;quot;(cost()|(concat()&amp;quot;) {
+        return 444;
+}
+if ($request_uri ~* &amp;quot;[+|(%20)]union[+|(%20)]&amp;quot;) {
+        return 444;
+}
+if ($request_uri ~* &amp;quot;[+|(%20)]and[+|(%20)]&amp;quot;) {
+        return 444;
+}
+if ($request_uri ~* &amp;quot;[+|(%20)]select[+|(%20)]&amp;quot;) {
+        return 444;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;文件注入禁止&#34;&gt;文件注入禁止&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;set $block_file_injections 0;
+if ($query_string ~ “[a-zA-Z0-9_]=http://”) {
+    set $block_file_injections 1;
+}
+if ($query_string ~ “[a-zA-Z0-9_]=(..//?)+”) {
+    set $block_file_injections 1;
+}
+if ($query_string ~ “[a-zA-Z0-9_]=/([a-z0-9_.]//?)+”) {
+    set $block_file_injections 1;
+}
+if ($block_file_injections = 1) {
+    return 444;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;溢出攻击过滤&#34;&gt;溢出攻击过滤&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;set $block_common_exploits 0;
+if ($query_string ~ “(&amp;lt;|%3C).*script.*(&amp;gt;|%3E)”) {
+    set $block_common_exploits 1;
+}
+if ($query_string ~ “GLOBALS(=|[|%[0-9A-Z]{0,2})”) {
+    set $block_common_exploits 1;
+}
+if ($query_string ~ “_REQUEST(=|[|%[0-9A-Z]{0,2})”) {
+    set $block_common_exploits 1;
+}
+if ($query_string ~ “proc/self/environ”) {
+    set $block_common_exploits 1;
+}
+if ($query_string ~ “mosConfig_[a-zA-Z_]{1,21}(=|%3D)”) {
+    set $block_common_exploits 1;
+}
+if ($query_string ~ “base64_(en|de)code(.*)”) {
+    set $block_common_exploits 1;
+}
+if ($block_common_exploits = 1) {
+    return 444;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;spam字段过滤&#34;&gt;spam字段过滤&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;set $block_spam 0;
+if ($query_string ~ “b(ultram|unicauca|valium|viagra|vicodin|xanax|ypxaieo)b”) {
+    set $block_spam 1;
+}
+if ($query_string ~ “b(erections|hoodia|huronriveracres|impotence|levitra|libido)b”) {
+    set $block_spam 1;
+}
+if ($query_string ~ “b(ambien|bluespill|cialis|cocaine|ejaculation|erectile)b”) {
+    set $block_spam 1;
+}
+if ($query_string ~ “b(lipitor|phentermin|pro[sz]ac|sandyauer|tramadol|troyhamby)b”) {
+    set $block_spam 1;
+}
+if ($block_spam = 1) {
+    return 444;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;###user-agents头过滤&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;set $block_user_agents 0;
+if ($http_user_agent ~ “Wget”) {
+    set $block_user_agents 1;
+}
+# Disable Akeeba Remote Control 2.5 and earlier
+if ($http_user_agent ~ “Indy Library”) {
+    set $block_user_agents 1;
+}
+# Common bandwidth hoggers and hacking tools.
+if ($http_user_agent ~ “libwww-perl”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “GetRight”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “GetWeb!”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “Go!Zilla”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “Download Demon”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “Go-Ahead-Got-It”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “TurnitinBot”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “GrabNet”) {
+    set $block_user_agents 1;
+}
+if ($block_user_agents = 1) {
+    return 444;
+}
+}
+&lt;/code&gt;&lt;/pre&gt;
+">nginx过滤sql注入和溢出</a>
+      </div>
       
       <div class="item">
         <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/jenkins-cao-zuo-bu-shu/"" data-c="
@@ -5731,6 +5852,21 @@ docker run -d -p 5601:5601 --net=host --name MyKibana -e ELASTICSEARCH_URL=http:
 vim  /usr/share/kibana/config/kibana.yml
 elasticsearch.hosts: [ &amp;quot;http://127.0.0.1:9200&amp;quot; ]     es 端口
 i18n.locale: &amp;quot;zh-CN&amp;quot;    //设置中文
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;快速构建consul&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//下载镜像
+docker pull consul:1.9.9
+//运行镜像
+docker run --name consul -d -p 8500:8500 consul:1.9.9
+//查看consul
+192.168.59.131:8500
+//运行端口解释
+TCP/8300: 8300端口用于服务器节点。客户端通过改端口RPC协议调用服务端节点
+TCP/8301: 8301端口用于单个数据中心所有节点之间的互相通信，即对LAN池信息的同步。它便得整个数据中心能够自动发现服务器地址，分布式检测节点故障，时间广播（如领导选举时间）
+TCP/UDP/8302: 8302端口用于单个或多个数据中心之间的服务器节点的信息同步，即对WAN池信息的同步。它针对互联网的高延迟进行了优化，能够实现跨数据中心请求。
+8500: 8500端口基于HTTP协议，用于API接口或WEB UI访问
+8600: 8600端口作为DNS服务器，它使得我们可以通过节点名查询节点信息
+
 &lt;/code&gt;&lt;/pre&gt;
 ">docker快速构建</a>
       </div>

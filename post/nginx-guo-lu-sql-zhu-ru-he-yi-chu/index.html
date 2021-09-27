@@ -8,7 +8,7 @@
 <meta name="keywords" content="吃的苦中苦，方能开路虎">
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
-<title>go-websocket | 蔡小辉</title>
+<title>nginx过滤sql注入和溢出 | 蔡小辉</title>
 <link rel="shortcut icon" href="/favicon.ico?v=1632739887804">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
@@ -41,8 +41,8 @@
 
 
 
-  <meta name="description" content="go-websocket" />
-  <meta name="keywords" content="websocket" />
+  <meta name="description" content="nginx过滤sql注入和溢出" />
+  <meta name="keywords" content="" />
 </head>
 
 <body>
@@ -175,7 +175,8 @@
       <div class="sidebar-body pisces" id="sidebar_body">
         
           
-            
+            <div class="post-side-meta" id="post_side_meta">
+              
 <div class="sidebar-wrapper box-shadow-wrapper bg-color">
   <div class="sidebar-item">
     <img class="site-author-image right-motion" src="/images/avatar.png"/>
@@ -213,6 +214,203 @@
 
 
 </div>
+            </div>
+            <div class="post-toc sidebar-body-active" id="post_toc" style="opacity: 1;">
+              <div class="toc-box right-motion">
+  <div class="toc-wrapper auto-number auto"
+    id="toc_wrapper">
+    <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6%E8%BF%87%E6%BB%A4">特殊字符过滤</a></li>
+<li><a href="#sql%E8%AF%AD%E5%8F%A5%E8%BF%87%E6%BB%A4">sql语句过滤</a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E6%B3%A8%E5%85%A5%E7%A6%81%E6%AD%A2">文件注入禁止</a></li>
+<li><a href="#%E6%BA%A2%E5%87%BA%E6%94%BB%E5%87%BB%E8%BF%87%E6%BB%A4">溢出攻击过滤</a></li>
+<li><a href="#spam%E5%AD%97%E6%AE%B5%E8%BF%87%E6%BB%A4">spam字段过滤</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+</div>
+
+<script>
+
+  let lastTop = 0, lList = [], hList = [], postBody, lastIndex = -1;
+  let active = 'active-show', activeClass = 'active-current';
+  let tocWrapper = document.querySelector('#toc_wrapper');
+  let tocContent = tocWrapper.children[0];
+  let autoNumber = tocWrapper && tocWrapper.classList.contains('auto-number');
+
+  function addTocNumber(elem, deep) {
+    if (!elem) {
+      return;
+    }
+    let prop = elem.__proto__;
+
+    if (prop === HTMLUListElement.prototype) {
+      for (let i = 0; i < elem.children.length; i++) {
+        addTocNumber(elem.children[i], deep + (i + 1) + '.');
+      }
+    } else if (prop === HTMLLIElement.prototype) {
+      // 保存li元素
+      if (elem.children[0] && elem.children[0].__proto__ === HTMLAnchorElement.prototype) {
+        lList.push(elem);
+      }
+      for (let i = 0; i < elem.children.length; i++) {
+        let cur = elem.children[i];
+        if (cur.__proto__ === HTMLAnchorElement.prototype) {
+          if (autoNumber) {
+            cur.text = deep + ' ' + cur.text;
+          }
+        } else if (cur.__proto__ === HTMLUListElement.prototype) {
+          addTocNumber(cur, deep);
+        }
+      }
+    }
+  }
+
+  function removeParentActiveClass() {
+    let parents = tocContent.querySelectorAll('.' + active)
+    parents.forEach(function (elem) {
+      elem.classList.remove(active);
+    });
+  }
+
+  function addActiveClass(index) {
+    if (index >= 0 && index < hList.length) {
+      lList[index].classList.add(activeClass);
+    }
+  }
+
+  function removeActiveClass(index) {
+    if (index >= 0 && index < hList.length) {
+      lList[index].classList.remove(activeClass);
+    }
+  }
+
+  function addActiveLiElemment(elem, parent) {
+    if (!elem || elem === parent) {
+      return;
+    } else {
+      if (elem.__proto__ === HTMLLIElement.prototype) {
+        elem.classList.add(active);
+      }
+      addActiveLiElemment(elem.parentElement, parent);
+    }
+  }
+
+  function showToc() {
+    if (tocWrapper) {
+      postBody = document.querySelector('#post_body');
+      for (let i = 0; i < postBody.children.length; i++) {
+        if (postBody.children[i].__proto__ === HTMLHeadingElement.prototype) {
+          hList.push(postBody.children[i]);
+        }
+      }
+      if (tocWrapper.classList.contains('compress')) {
+        tocContent.classList.add('closed');
+      } else if (tocWrapper.classList.contains('no_compress')) {
+        tocContent.classList.add('expanded');
+      } else {
+        if (hList.length > 10) {
+          active = 'active-hidden'
+          tocContent.classList.add('closed');
+        } else {
+          tocContent.classList.add('expanded');
+        }
+      }
+    }
+  }
+
+  (function () {
+    // 处理不是从#一级标题开始目录
+    if (tocContent.children.length === 1 && tocContent.children[0].__proto__ === HTMLLIElement.prototype) {
+      let con = tocContent.children[0].children[0];
+      tocContent.innerHTML = con.innerHTML;
+    }
+    let markdownItTOC = document.querySelector('.markdownIt-TOC');
+    let innerHeight = window.innerHeight;
+    markdownItTOC.style = `max-height: ${innerHeight - 80 > 0 ? innerHeight - 80 : innerHeight}px`
+    addTocNumber(tocContent, '');
+  })();
+
+  document.addEventListener('scroll', function (e) {
+    if (lList.length <= 0) {
+      return;
+    }
+    let scrollTop = document.scrollingElement.scrollTop + 10;
+    let dir;
+
+    if (lastTop - scrollTop > 0) {
+      dir = 'up';
+    } else {
+      dir = 'down';
+    }
+
+    lastTop = scrollTop;
+    if (scrollTop <= 0) {
+      if (lastIndex >= 0 && lastIndex < hList.length) {
+        lList[lastIndex].classList.remove(activeClass);
+      }
+      return;
+    }
+
+    let current = 0, hasFind = false;
+    for (let i = 0; i < hList.length; i++) {
+      if (hList[i].offsetTop > scrollTop) {
+        current = i;
+        hasFind = true;
+        break;
+      }
+    }
+    if (!hasFind && scrollTop > lList[lList.length - 1].offsetTop) {
+      current = hList.length - 1;
+    } else {
+      current--;
+    }
+    if (dir === 'down') {
+      if (current > lastIndex) {
+        addActiveClass(current);
+        removeActiveClass(lastIndex)
+        lastIndex = current;
+        removeParentActiveClass();
+        lList[current] && addActiveLiElemment(lList[current].parentElement, tocContent);
+      }
+    } else {
+      if (current < lastIndex) {
+        addActiveClass(current);
+        removeActiveClass(lastIndex);
+        lastIndex = current;
+        removeParentActiveClass();
+        lList[current] && addActiveLiElemment(lList[current].parentElement, tocContent);
+      }
+    }
+  });
+
+
+  window.addEventListener('load', function () {
+    showToc();
+    document.querySelector('#sidebar').style = 'display: block;';
+    tocWrapper.classList.add('toc-active');
+    setTimeout(function () {
+      if ("createEvent" in document) {
+        let evt = document.createEvent("HTMLEvents");
+        evt.initEvent("scroll", false, true);
+        document.dispatchEvent(evt);
+      }
+      else {
+        document.fireEvent("scroll");
+      }
+    }, 500)
+  })
+
+</script>
+            </div>
           
         
       </div>
@@ -300,8 +498,8 @@
           <div class="section bg-color post post-page">
             <section class="post-header">
   <h1 class="post-title">
-    <a class="post-title-link" href="https://v-micro.github.io/post/go-websocket/">
-      go-websocket
+    <a class="post-title-link" href="https://v-micro.github.io/post/nginx-guo-lu-sql-zhu-ru-he-yi-chu/">
+      nginx过滤sql注入和溢出
     </a>
   </h1>
   <div class="post-meta">
@@ -309,321 +507,138 @@
     <span class="meta-item pc-show">
       <i class="fa fa-calendar-o"></i>
       <span class="language" data-lan="publish">发布于</span>
-      <span class="publish-time" data-t="2021-06-21 11:46:14">2021-06-21</span>
+      <span class="publish-time" data-t="2021-09-27 18:46:13">2021-09-27</span>
       <span class="post-meta-divider pc-show">|</span>
     </span>
     
     <span class="meta-item">
-      <i class="fa fa-folder-o"></i>
-      <span class="pc-show language" data-lan="category-in">分类于</span>
-      
-      
-      <a href="https://v-micro.github.io/tag/x_boUVZ7B/">
-        <span>websocket</span>
-      </a>
-      
-      
-    </span>
-    <span class="post-meta-divider">|</span>
-    
-    <span class="meta-item">
       <i class="fa fa-clock-o"></i>
-      <span>7<span class="language" data-lan="minute">分钟</span></span>
+      <span>3<span class="language" data-lan="minute">分钟</span></span>
     </span>
     <span class="meta-item">
       <span class="post-meta-divider">|</span>
       <i class="fa fa-file-word-o"></i>
-      <span>1412<span class="pc-show language" data-lan="words">字数</span></span>
+      <span>410<span class="pc-show language" data-lan="words">字数</span></span>
     </span>
     
   </div>
 </section>
             <div class="post-body next-md-body" id="post_body">
-              <p>使用go建立自己的websocket<br>
-安装websocket库</p>
-<pre><code>go get github.com/gorilla/websocket
-</code></pre>
-<p>下面为一个简单ws链接案例</p>
-<pre><code>// websocket
-http.HandleFunc(&quot;/ws&quot;, func(writer http.ResponseWriter, request *http.Request) {
-    //定义upgrader
-    upgrader := websocket.Upgrader{
-        CheckOrigin: func(r *http.Request) bool {
-            return true
-        },
-    }
-
-    //升级路由为socket
-    wsConn, err := upgrader.Upgrade(writer, request, nil)
-    if err != nil {
-        fmt.Println(&quot;==================== 链接失败&quot;)
-        return
-    }
-
-    //定义接受客户端消息
-    for{
-        //接受消息
-        _,data,err := wsConn.ReadMessage()
-        if err != nil {	//接受消息失败则结束链接
-            fmt.Println(&quot;================ 关闭链接&quot;)
-            wsConn.Close()
-        }
-        fmt.Printf(&quot;接收到消息：%s&quot;,string(data))
-
-        //返回消息
-        err = wsConn.WriteMessage(websocket.TextMessage,[]byte(&quot;server return&quot;))
-        if err != nil {
-            fmt.Println(&quot;================= 关闭链接&quot;)
-            wsConn.Close()
-        }
-    }
-})
-_ = http.ListenAndServe(&quot;:7777&quot;,nil)
-</code></pre>
-<p>封装自己的消息组件</p>
-<p>ws.go</p>
-<pre><code>ws.go
-
-
-package ws
-
-import (
-	&quot;fmt&quot;
-	&quot;github.com/gofrs/uuid&quot;
-	&quot;github.com/gorilla/websocket&quot;
-	&quot;log&quot;
-	&quot;net/http&quot;
-	&quot;time&quot;
-)
-
-// 客户端信息
-type Client struct {
-	Id string
-	Socket *websocket.Conn
-	Message   chan []byte
-}
-
-// 消息管理结构体
-type MessageData struct {
-	Id string
-	Message    []byte
-}
-
-// Manager 所有 websocket 信息
-type Manager struct {
-	Clients map[*Client]bool //客户端所有
-	Register chan *Client	//新客户端
-	UnRegister chan *Client	//新注销客户端
-	Message	chan *MessageData //新消息
-}
-
-func (c *Client) Read() {
-	for {
-		_, message, err := c.Socket.ReadMessage()
-		if err != nil {
-			break
-		}
-		log.Printf(&quot;客户端 [%s] 发送消息: %s&quot;, c.Id, string(message))
-
-		//发送消息处理
-		if string(message) == &quot;1&quot;{ //返回数据
-			data := &amp;MessageData{
-				Id: c.Id,
-				Message:    []byte(&quot;dan fa xiaoxi &quot;),
-			}
-			WebsocketManager.Message &lt;- data
-		}
-
-		if string(message) == &quot;2&quot;{ //群发消息
-			data := &amp;MessageData{
-				Id: &quot;&quot;,
-				Message:    []byte(&quot;qun fa le xiao xi&quot;),
-			}
-			WebsocketManager.Message &lt;- data
-		}
-
-		if string(message) == &quot;3&quot;{ //退出登录
-			WebsocketManager.UnRegister &lt;- c
-			//你退出来
-			data := &amp;MessageData{
-				Id: c.Id,
-				Message:    []byte(&quot;logout&quot;),
-			}
-			WebsocketManager.Message &lt;- data
-		}
-
-		c.Message &lt;- message
-	}
-}
-
-// 写信息，从 channel 变量 Send 中读取数据写入 websocket 连接
-func (c *Client) Write() {
-	for {
-		select {
-		case message, ok := &lt;-c.Message:
-			if !ok {
-				_ = c.Socket.WriteMessage(websocket.CloseMessage, []byte{})
-				return
-			}
-			log.Printf(&quot;client [%s] write message: %s&quot;, c.Id, string(message))
-			err := c.Socket.WriteMessage(websocket.TextMessage, message)
-			if err != nil {
-				log.Printf(&quot;client [%s] writemessage err: %s&quot;, c.Id, err)
-			}
-		}
-	}
-}
-
-// 启动 websocket 管理器
-func (manager *Manager) Start() {
-	log.Printf(&quot;管理器启动中&quot;)
-	for {
-		select {
-		//客户端加入
-		case client := &lt;- manager.Register:
-			manager.Clients[client] = true
-			log.Printf(&quot;[%s]加入&quot;,client.Id)
-		//客户端退出
-		case client := &lt;- manager.UnRegister:
-			manager.Clients[client] = false
-			log.Printf(&quot;[%s]离开了&quot;,client.Id)
-		//消息管理
-		case message := &lt;- manager.Message:
-			for client := range manager.Clients{
-				if message.Id == &quot;&quot; {	//都发送
-					_ = client.Socket.WriteMessage(websocket.TextMessage,message.Message)
-				}
-				if message.Id == client.Id { //针对性发送
-					_ = client.Socket.WriteMessage(websocket.TextMessage,message.Message)
-				}
-
-			}
-		}
-	}
-}
-
-func (manager *Manager)WsClient(w http.ResponseWriter,r *http.Request) {
-	upGrader := websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
-
-	conn, err := upGrader.Upgrade(w,r,nil)
-	if err != nil {
-		return
-	}
-
-	// 写入组
-	u,_ := uuid.NewV4()
-	client := &amp;Client{
-		Id:     u.String(),
-		Socket: conn,
-		Message:   make(chan []byte, 1024),
-	}
-	manager.Register &lt;- client
-	go client.Read()
-	//go client.Write()
-	//time.Sleep(time.Second * 5)
-	//// 测试单个 client 发送数据
-	//manager.Send(client.Id, []byte(&quot;Send message ----&quot; + time.Now().Format(&quot;2006-01-02 15:04:05&quot;)))
-}
-
-// 初始化 wsManager 管理器
-var WebsocketManager = Manager{
-	Clients:    make(map[*Client]bool),	//客户端管理
-	Register:   make(chan *Client),	//新进入
-	UnRegister: make(chan *Client),	//新离开
-	Message:   make(chan *MessageData, 128),//新消息
-}
-
-//信息统计
-func (manager *Manager)Info() map[string]interface{}  {
-	managerInfo := make(map[string]interface{})
-	managerInfo[&quot;countClient&quot;] = len(manager.Clients)
-	return managerInfo
-}
-
-//测试
-func TestInfo()  {
-	for {
-		time.Sleep(time.Second * 10)
-		info := WebsocketManager.Info()
-		fmt.Println(info)
-	}
-}
-
-//单发消息
-func TestSend()  {
-	for {
-		time.Sleep(time.Second * 5)
-		data := &amp;MessageData{
-			Id: &quot;&quot;,
-			Message:    []byte(&quot;单发数据&quot;),
-		}
-		WebsocketManager.Message &lt;- data
-	}
-}
-
-//群发消息
-func TestSendAll()  {
-	for {
-		time.Sleep(time.Second * 5)
-		data := &amp;MessageData{
-			Id: &quot;&quot;,
-			Message:    []byte(&quot;群发数据&quot;),
-		}
-		WebsocketManager.Message &lt;- data
-	}
+              <p>代码不可能是全完美的，动态网页在实用中难免会遇到sql注入的攻击。而通过nginx的配置过滤，可以很好的避免被攻击的可能。SQL注入攻击一般问号后面的请求参数，在nginx里用$query_string表示</p>
+<h3 id="特殊字符过滤">特殊字符过滤</h3>
+<pre><code>if ( $query_string ~* &quot;.*[;'&lt;&gt;].*&quot; ) {
+    return 404;
 }
 </code></pre>
-<p>main.go</p>
-<pre><code>//启动管理器
-go ws.WebsocketManager.Start()
-go ws.WebsocketManager.Info()
-//go ws.TestInfo()	//测试数据
-//go ws.TestSendAll()	//测试数据
-http.HandleFunc(&quot;/ws&quot;,ws.WebsocketManager.WsClient)
-_ = http.ListenAndServe(&quot;:7777&quot;,nil)
-</code></pre>
-<p>总结</p>
-<pre><code>难点总结
-
-内核瓶颈
-推送量大：100W在线 * 10条/每秒 = 1000W条/秒
-内核瓶颈：linux内核发送TCP的极限包频 ≈ 100W/秒
-
-锁瓶颈
-需要维护在线用户集合（100W用户在线），通常是一个字典结构
-推送消息即遍历整个集合，顺序发送消息，耗时极长 
-推送期间，客户端仍旧正常的上下线，集合面临不停的修改，修改需要遍历，所以集合需要上锁
-
-CPU瓶颈
-浏览器与服务端之间一般采用的是JSon格式去通讯
-Json编码非常耗费CPU资源
-向100W在线推送一次，则需100W次Json Encode
-
-优化方案
-内核瓶颈
-减少网络小包的发送，我们将网络上几百字节定义成网络的小包了，小包的问题是对内核和网络的中间设备造成处理的压力。方案是将一秒内N条消息合并成1条消息，合并后，每秒推送数等于在线连接数。
-锁瓶颈
-大锁拆小锁，将长连接打散到多个集合中去，每个集合都有自己的锁，多线程并发推送集合，线程之间推送的集合不同，所以没有锁的竞争关系，避免锁竞争。
-读写锁取代互斥锁，多个推送任务可以并发遍历相同集合
-CPU瓶颈
-减少重复计算，Json编码前置，1次消息编码+100W次推送，消息合并前置，N条消息合并后，只需要编码一次。
-
-</code></pre>
-<p>知识点</p>
-<pre><code>select {
-    case &lt;-ch1:
-        // 如果从 ch1 信道成功接收数据，则执行该分支代码
-    case ch2 &lt;- 1:
-        // 如果成功向 ch2 信道成功发送数据，则执行该分支代码
-    default:
-        // 如果上面都没有成功，则进入 default 分支处理流程
+<h3 id="sql语句过滤">sql语句过滤</h3>
+<pre><code>if ($request_uri ~* &quot;(cost()|(concat()&quot;) {
+        return 444;
 }
-
-注：如果 ch1 或者 ch2 信道都阻塞的话，就会立即进入 default 分支，并不会阻塞。但是如果没有 default 语句，则会阻塞直到某个信道操作成功为止。
+if ($request_uri ~* &quot;[+|(%20)]union[+|(%20)]&quot;) {
+        return 444;
+}
+if ($request_uri ~* &quot;[+|(%20)]and[+|(%20)]&quot;) {
+        return 444;
+}
+if ($request_uri ~* &quot;[+|(%20)]select[+|(%20)]&quot;) {
+        return 444;
+}
+</code></pre>
+<h3 id="文件注入禁止">文件注入禁止</h3>
+<pre><code>set $block_file_injections 0;
+if ($query_string ~ “[a-zA-Z0-9_]=http://”) {
+    set $block_file_injections 1;
+}
+if ($query_string ~ “[a-zA-Z0-9_]=(..//?)+”) {
+    set $block_file_injections 1;
+}
+if ($query_string ~ “[a-zA-Z0-9_]=/([a-z0-9_.]//?)+”) {
+    set $block_file_injections 1;
+}
+if ($block_file_injections = 1) {
+    return 444;
+}
+</code></pre>
+<h3 id="溢出攻击过滤">溢出攻击过滤</h3>
+<pre><code>set $block_common_exploits 0;
+if ($query_string ~ “(&lt;|%3C).*script.*(&gt;|%3E)”) {
+    set $block_common_exploits 1;
+}
+if ($query_string ~ “GLOBALS(=|[|%[0-9A-Z]{0,2})”) {
+    set $block_common_exploits 1;
+}
+if ($query_string ~ “_REQUEST(=|[|%[0-9A-Z]{0,2})”) {
+    set $block_common_exploits 1;
+}
+if ($query_string ~ “proc/self/environ”) {
+    set $block_common_exploits 1;
+}
+if ($query_string ~ “mosConfig_[a-zA-Z_]{1,21}(=|%3D)”) {
+    set $block_common_exploits 1;
+}
+if ($query_string ~ “base64_(en|de)code(.*)”) {
+    set $block_common_exploits 1;
+}
+if ($block_common_exploits = 1) {
+    return 444;
+}
+</code></pre>
+<h3 id="spam字段过滤">spam字段过滤</h3>
+<pre><code>set $block_spam 0;
+if ($query_string ~ “b(ultram|unicauca|valium|viagra|vicodin|xanax|ypxaieo)b”) {
+    set $block_spam 1;
+}
+if ($query_string ~ “b(erections|hoodia|huronriveracres|impotence|levitra|libido)b”) {
+    set $block_spam 1;
+}
+if ($query_string ~ “b(ambien|bluespill|cialis|cocaine|ejaculation|erectile)b”) {
+    set $block_spam 1;
+}
+if ($query_string ~ “b(lipitor|phentermin|pro[sz]ac|sandyauer|tramadol|troyhamby)b”) {
+    set $block_spam 1;
+}
+if ($block_spam = 1) {
+    return 444;
+}
+</code></pre>
+<p>###user-agents头过滤</p>
+<pre><code>set $block_user_agents 0;
+if ($http_user_agent ~ “Wget”) {
+    set $block_user_agents 1;
+}
+# Disable Akeeba Remote Control 2.5 and earlier
+if ($http_user_agent ~ “Indy Library”) {
+    set $block_user_agents 1;
+}
+# Common bandwidth hoggers and hacking tools.
+if ($http_user_agent ~ “libwww-perl”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “GetRight”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “GetWeb!”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “Go!Zilla”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “Download Demon”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “Go-Ahead-Got-It”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “TurnitinBot”) {
+    set $block_user_agents 1;
+}
+if ($http_user_agent ~ “GrabNet”) {
+    set $block_user_agents 1;
+}
+if ($block_user_agents = 1) {
+    return 444;
+}
+}
 </code></pre>
 
             </div>
@@ -637,7 +652,7 @@ CPU瓶颈
     </li>
     <li class="post-copyright-link">
       <strong class="language" data-lan="link">本文链接：</strong>
-      <a href="https://v-micro.github.io/post/go-websocket/" title="go-websocket">https://v-micro.github.io/post/go-websocket/</a>
+      <a href="https://v-micro.github.io/post/nginx-guo-lu-sql-zhu-ru-he-yi-chu/" title="nginx过滤sql注入和溢出">https://v-micro.github.io/post/nginx-guo-lu-sql-zhu-ru-he-yi-chu/</a>
     </li>
     <li class="post-copyright-license">
       <strong class="language" data-lan="copyright">版权声明： </strong>
@@ -646,21 +661,15 @@ CPU瓶颈
   </ul>
   <div class="tags">
     
-      <a href="https://v-micro.github.io/tag/x_boUVZ7B/"># websocket</a>
-    
   </div>
   <div class="nav">
     <div class="nav-prev">
       
-        <i class="fa fa-chevron-left"></i>
-        <a class="nav-pc-next" title="kubernetes集群搭建" href="https://v-micro.github.io/post/kubernetes-ji-qun-da-jian/">kubernetes集群搭建</a class="nav-pc-next">
-        <a class="nav-mobile-prev" title="kubernetes集群搭建" href="https://v-micro.github.io/post/kubernetes-ji-qun-da-jian/">上一篇</a>
-      
     </div>
     <div class="nav-next">
       
-        <a class="nav-pc-next" title="Elasticsearch使用" href="https://v-micro.github.io/post/elasticsearch-shi-yong/">Elasticsearch使用</a>
-        <a class="nav-mobile-next" title="Elasticsearch使用" href="https://v-micro.github.io/post/elasticsearch-shi-yong/">下一篇</a>
+        <a class="nav-pc-next" title="jenkins 操作部署" href="https://v-micro.github.io/post/jenkins-cao-zuo-bu-shu/">jenkins 操作部署</a>
+        <a class="nav-mobile-next" title="jenkins 操作部署" href="https://v-micro.github.io/post/jenkins-cao-zuo-bu-shu/">下一篇</a>
         <i class="fa fa-chevron-right"></i>
       
     </div>
