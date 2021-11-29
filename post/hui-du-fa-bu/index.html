@@ -9,7 +9,7 @@
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
 <title>灰度发布 | 蔡小辉</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1632740226210">
+<link rel="shortcut icon" href="/favicon.ico?v=1638180045632">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -187,7 +187,7 @@
     <div class="sidebar-item-box">
       <a href="/archives/">
         
-        <span class="site-item-stat-count">23</span>
+        <span class="site-item-stat-count">24</span>
         <span class="site-item-stat-name language" data-lan="article">文章</span>
       </a>
     </div>
@@ -1708,6 +1708,151 @@ nginx: configuration file /soft/nginx/conf/nginx.conf test is successful
       <hr>
     </div>
     <div class="result" id="result">
+      
+      <div class="item">
+        <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/wei-fu-wu-jia-gou-jie-xi/"" data-c="
+          &lt;p&gt;浅谈微服务治理方案&lt;/p&gt;
+&lt;h1 id=&#34;api-网关-api-gateway&#34;&gt;API 网关 API Gateway&lt;/h1&gt;
+&lt;p&gt;帮助用户在自己的多个系统之间，或者内部系统与合作伙伴以及第三方的系统之间实现跨系统、跨协议的服务能力互通。&lt;/p&gt;
+&lt;p&gt;API 网关如何帮助企业开放和共享服务？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;缺少有效应对突发流量的手段&lt;/li&gt;
+&lt;li&gt;重复开发通用功能&lt;/li&gt;
+&lt;li&gt;非 RESTFUL 标准接口开放困难&lt;/li&gt;
+&lt;li&gt;缺少 API 灰度发布机制&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure data-type=&#34;image&#34; tabindex=&#34;1&#34;&gt;&lt;img src=&#34;https://v-micro.github.io/post-images/1638176750393.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/figure&gt;
+&lt;h3 id=&#34;核心解决&#34;&gt;核心解决&lt;/h3&gt;
+&lt;p&gt;api生命周期管理&lt;br&gt;
+  【支持包括 API 发布、API 下线、API 版本管理等生命周期管理功能】&lt;br&gt;
+统一认证鉴权&lt;br&gt;
+  【支持 AK/SK、JWT 、OAuth2等认证方式，提供网关、服务和 API 级鉴权管理功能】&lt;br&gt;
+服务治理&lt;br&gt;
+  【支持多场景流控、静态/动态降级、超时重试、缓存和熔断等功能】&lt;br&gt;
+服务路由&lt;br&gt;
+  【支持根据请求方法、Path、Host、Header、Query String 动态路由，以及负载均衡和版本分流】&lt;br&gt;
+安全防护&lt;br&gt;
+  【支持 IP 黑白名单，支持 CORS 和 JSONP 跨域访问标准】&lt;br&gt;
+协议转换&lt;br&gt;
+  【支持 Web Service 、gRPC和Dubbo RPC接口转为 RESTFUL接口对外开放】&lt;br&gt;
+数据转换&lt;br&gt;
+  【支持请求 Header、 Query String 转换，以及请求 Path 重写】&lt;br&gt;
+应用集成&lt;br&gt;
+  【支持低代码可视化方式编排上百种协议类型的API】&lt;br&gt;
+运维监控&lt;br&gt;
+  【支持查看服务或接口调用记录和调用统计，支持自定义配置告警规则】&lt;/p&gt;
+&lt;h1 id=&#34;全链路应用监控-apm&#34;&gt;全链路应用监控 APM&lt;/h1&gt;
+&lt;p&gt;全链路应用监控 APM 提供集链路追踪、应用性能和业务数据于一体立体化监控平台。旨在通过数据自动化收集、数据可视化展示，使用户能够及时、全面地掌控各个产品的应用性能情况，定位性能瓶颈。&lt;/p&gt;
+&lt;p&gt;大规模微服务下如何进行故障排查和应用运维？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;服务架构无法全面把握&lt;/li&gt;
+&lt;li&gt;快速定位异常&lt;/li&gt;
+&lt;li&gt;服务依赖关系无从确认&lt;/li&gt;
+&lt;li&gt;异构系统如何全局监控&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;核心解决-2&#34;&gt;核心解决&lt;/h3&gt;
+&lt;p&gt;全局拓扑&lt;br&gt;
+  【自动化拓扑发现应用以及中间件之间的全局调用拓关系】&lt;br&gt;
+调用链追踪&lt;br&gt;
+  【调用链追踪记录单个业务在全链路的调用详情，包括代码执行情况、数据库调用等】&lt;br&gt;
+性能监控&lt;br&gt;
+  【支持 JVM、数据库、慢 SQL、缓存中间件性能等监控】&lt;br&gt;
+日志关联&lt;br&gt;
+  【无侵入、不需要应用程序修改代码即可完成日志系统和 APM 的关联】&lt;br&gt;
+慢响应分析&lt;br&gt;
+  【提供判定慢响应的功能，可以准确识别出系统中出现的慢响应请求】&lt;br&gt;
+关键业务&lt;br&gt;
+  【支持关键事务入口和拓扑的可视化，帮助用户分析业务依赖关系】&lt;/p&gt;
+&lt;h1 id=&#34;分布式事务-gtxs&#34;&gt;分布式事务 GTXS&lt;/h1&gt;
+&lt;p&gt;分布式事务服务 GTXS 是微服务场景下高性能、高可靠、接入成本低的分布式事务中间件支持低成本框架托管式事务，支持 MySQL、Oralce、TiDB、分库分表中间件等多种数据源。&lt;/p&gt;
+&lt;p&gt;微服务架构下如何保障数据一致性？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;跨服务事务一致性缺乏保证&lt;/li&gt;
+&lt;li&gt;传统方式接入成本过高&lt;/li&gt;
+&lt;li&gt;消息发送事务一致性难以保证&lt;/li&gt;
+&lt;li&gt;分布式事务执行状态不透明&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;核心解决-3&#34;&gt;核心解决&lt;/h3&gt;
+&lt;p&gt;事务托管框架模式&lt;br&gt;
+  【事务托管框架模式支持一行注解接入分布式事务，显著降低接入成本】&lt;br&gt;
+事务消息&lt;br&gt;
+  【支持多种消息中间件：RocketMQ、RabbitMQ、Kafka、 Pulsar】&lt;br&gt;
+事务运行监控&lt;br&gt;
+  【通过事务调用链路图，提供事务调用关系以及事务具体某一链路的出错信息】&lt;br&gt;
+事务异常运维&lt;br&gt;
+  【支持对于异常事务进行回查、自动重试、手动重试等运维操作】&lt;/p&gt;
+&lt;h1 id=&#34;日志服务-logseer&#34;&gt;日志服务 LogSeer&lt;/h1&gt;
+&lt;p&gt;日志全生命周期管理平台，统一采集、管理海量日志，日志采集、清洗、存储、检索、监控、告警等多项功能，辅助开发测试及排障工作，提升运营效率。&lt;/p&gt;
+&lt;p&gt;我们如何帮助企业构建海量日志处理能力？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;海量日志存储分散&lt;/li&gt;
+&lt;li&gt;实时查询需求复杂&lt;/li&gt;
+&lt;li&gt;日志格式不规范&lt;/li&gt;
+&lt;li&gt;监控运维困难&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure data-type=&#34;image&#34; tabindex=&#34;2&#34;&gt;&lt;img src=&#34;https://v-micro.github.io/post-images/1638178672633.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/figure&gt;
+&lt;h1 id=&#34;中间件&#34;&gt;中间件&lt;/h1&gt;
+&lt;figure data-type=&#34;image&#34; tabindex=&#34;3&#34;&gt;&lt;img src=&#34;https://v-micro.github.io/post-images/1638178960341.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;mysql&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;安全容灾：支持两地三中心部署，数据强一致性保障，满足金融级合规可靠性要求&lt;/li&gt;
+&lt;li&gt;读写分类：应对大量读请求的业务场景，额外提供只读访问地址，降低主节点的读写压力，并支持读能力的横向扩展&lt;/li&gt;
+&lt;li&gt;高可用：支持三节点多维度高可用，支持基于 Kubernetes 的故障自愈，单点时间短&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;redis&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;缓存：满足低时延、高并发访问要求，减轻数据库负载，适用于直播、大促、秒杀等场景&lt;/li&gt;
+&lt;li&gt;排行榜：提供有序集合数据结构，实现如游戏积分实时排行榜、电商月度销量排行榜等复杂排行榜应用&lt;/li&gt;
+&lt;li&gt;浏览器：为浏览量、播放量、广告点击量、库存计数提供高性能的实时计数功能&lt;/li&gt;
+&lt;li&gt;消息系统：针对业务解耦、流量削峰及异步处理实时性低的业务，提供发布/订阅及阻塞队列功能，可实现简单的消息队列系统&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Elasticsearch&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;日志分析：最易实施和扩展日志记录的解决方案之一，快速对接各种数据源，借助 Kibana 的丰富图表高效可视化分析日志&lt;/li&gt;
+&lt;li&gt;全文搜索：仅需几毫秒，即可从 PB 级数据中找到匹配信息，并支持排序、分组、聚合，满足语义搜索、视频/语音检索等各种搜索场景&lt;/li&gt;
+&lt;li&gt;数据分析及可视化：Kibana 提供开箱即用的可视化组件和图表模板，简化了数据分析及可视化的难度&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Kafka&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;异步消息通信：相比传统消息代理系统，Kafka 具有更高的吞吐量、内置分区、冗余、固有容错等能力&lt;/li&gt;
+&lt;li&gt;网站活动追踪：Web 或 APP 活动跟踪的最佳工具，实现网页浏览、操作等信息的实时处理、监控或离线统计分析等&lt;/li&gt;
+&lt;li&gt;构建日志分析平台：日志聚合的最佳解决方案，数据采集业务无感知，对接 Hadoop 等离线仓库存储、Spark 等实时在线分析平台&lt;/li&gt;
+&lt;li&gt;数据中转枢纽：利用Kafka 作为数据中转枢纽，可将同一份数据集注入到多个专用系统内，应对不同业务需求&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;RocketMQ&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;异步解耦：实现上下游系统松耦合设计，下游系统出现异常或宕机不会影响更多系统&lt;/li&gt;
+&lt;li&gt;削峰填谷：上游系统出现访问流量高峰时，将业务逻辑异步化，避免流量冲击下游业务，适用于电商秒杀，抢红包等场景&lt;/li&gt;
+&lt;li&gt;分布式事务消息：既实现上下游解耦，又引入分布式事务，确保数据最终一致性，适用于交易、支付等场景&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;RabbitMQ&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;异步解耦：实现上下游系统松耦合设计，下游系统出现异常或宕机不会影响更多系统&lt;/li&gt;
+&lt;li&gt;削峰填谷：上游系统出现访问流量高峰时，将业务逻辑异步化，避免流量冲击下游业务，如电商秒杀，抢红包等&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;ZooKeeper&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;服务注册与发现：提供稳定可靠的 ZooKeeper 集群实现服务注册与发现&lt;/li&gt;
+&lt;li&gt;分布式协调：典型的分布式数据一致性解决方案，实现分布式配置管理、系统协调等，例如 HBase、Kafka 等&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+">微服务架构解析</a>
+      </div>
       
       <div class="item">
         <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/nginx-guo-lu-sql-zhu-ru-he-yi-chu/"" data-c="
