@@ -9,7 +9,7 @@
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
 <title>kubernetes集群搭建 | 蔡小辉</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1638180075127">
+<link rel="shortcut icon" href="/favicon.ico?v=1638933861729">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -186,7 +186,7 @@
     <div class="sidebar-item-box">
       <a href="/archives/">
         
-        <span class="site-item-stat-count">24</span>
+        <span class="site-item-stat-count">25</span>
         <span class="site-item-stat-name language" data-lan="article">文章</span>
       </a>
     </div>
@@ -1705,6 +1705,270 @@ spec:
       <hr>
     </div>
     <div class="result" id="result">
+      
+      <div class="item">
+        <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/etcd-an-zhuang-shi-yong/"" data-c="
+          &lt;p&gt;etcd是CoreOS团队于2013年6月发起的开源项目，它的目标是构建一个高可用的分布式键值(key-value)数据库。etcd内部采用raft协议作为一致性算法，etcd基于Go语言实现。&lt;/p&gt;
+&lt;h3 id=&#34;安装etcd&#34;&gt;安装etcd&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;# 安装etcd
+docker pull bitnami/etcd:latest
+
+# 设置网络
+docker network create app-tier --driver bridge
+
+# 启动etcd
+docker run -d --name Etcd-server \
+    --network app-tier \
+    --publish 2379:2379 \
+    --publish 2380:2380 \
+    --env ALLOW_NONE_AUTHENTICATION=yes \
+    --env ETCD_ADVERTISE_CLIENT_URLS=http://etcd-server:2379 \
+    bitnami/etcd:latest
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;go封装etcd库&#34;&gt;go封装etcd库&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;package comutil
+
+import (
+	&amp;quot;context&amp;quot;
+	&amp;quot;go.etcd.io/etcd/api/v3/mvccpb&amp;quot;
+	clientv3 &amp;quot;go.etcd.io/etcd/client/v3&amp;quot;
+	&amp;quot;log&amp;quot;
+	&amp;quot;sync&amp;quot;
+	&amp;quot;time&amp;quot;
+)
+
+//ServiceRegister 创建租约注册服务
+type ServiceRegister struct {
+	cli     *clientv3.Client //etcd client
+	leaseID clientv3.LeaseID //租约ID
+	//租约keepalieve相应chan
+	keepAliveChan &amp;lt;-chan *clientv3.LeaseKeepAliveResponse
+	key           string //key
+	val           string //value
+}
+
+//NewServiceRegister 新建注册服务
+func NewServiceRegister(endpoints []string, key, val string, lease int64) (*ServiceRegister, error) {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   endpoints,
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ser := &amp;amp;ServiceRegister{
+		cli: cli,
+		key: key,
+		val: val,
+	}
+
+	//申请租约设置时间keepalive
+	if err := ser.putKeyWithLease(lease); err != nil {
+		return nil, err
+	}
+
+	return ser, nil
+}
+
+//设置租约
+func (s *ServiceRegister) putKeyWithLease(lease int64) error {
+	//设置租约时间
+	resp, err := s.cli.Grant(context.Background(), lease)
+	if err != nil {
+		return err
+	}
+	//注册服务并绑定租约
+	_, err = s.cli.Put(context.Background(), s.key, s.val, clientv3.WithLease(resp.ID))
+	if err != nil {
+		return err
+	}
+	//设置续租 定期发送需求请求
+	leaseRespChan, err := s.cli.KeepAlive(context.Background(), resp.ID)
+
+	if err != nil {
+		return err
+	}
+	s.leaseID = resp.ID
+	log.Println(s.leaseID)
+	s.keepAliveChan = leaseRespChan
+	log.Printf(&amp;quot;Put key:%s  val:%s  success!&amp;quot;, s.key, s.val)
+	return nil
+}
+
+//ListenLeaseRespChan 监听 续租情况
+func (s *ServiceRegister) ListenLeaseRespChan() {
+	for leaseKeepResp := range s.keepAliveChan {
+		log.Println(&amp;quot;续约成功&amp;quot;, leaseKeepResp)
+	}
+	log.Println(&amp;quot;关闭续租&amp;quot;)
+}
+
+// Close 注销服务
+func (s *ServiceRegister) Close() error {
+	//撤销租约
+	if _, err := s.cli.Revoke(context.Background(), s.leaseID); err != nil {
+		return err
+	}
+	log.Println(&amp;quot;撤销租约&amp;quot;)
+	return s.cli.Close()
+}
+
+/*
+
+//服务租约
+var endpoints = []string{&amp;quot;localhost:2379&amp;quot;}
+ser, err := comutil.NewServiceRegister(&amp;quot;server_order&amp;quot;, &amp;quot;111111&amp;quot;, 5)
+if err != nil {
+	log.Fatalln(err)
+}
+//监听续租相应chan
+go ser.ListenLeaseRespChan()
+select {}
+
+*/
+
+//======================================================== 服务注册end
+
+//ServiceDiscovery 服务发现
+type ServiceDiscovery struct {
+	cli        *clientv3.Client  //etcd client
+	serverList map[string]string //服务列表
+	lock       sync.Mutex
+}
+
+
+//NewServiceDiscovery  新建发现服务
+func NewServiceDiscovery(endpoints []string) *ServiceDiscovery {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   endpoints,
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &amp;amp;ServiceDiscovery{
+		cli:        cli,
+		serverList: make(map[string]string),
+	}
+}
+
+
+//WatchService 初始化服务列表和监视
+func (s *ServiceDiscovery) WatchService(prefix string) error {
+	//根据前缀获取现有的key
+	resp, err := s.cli.Get(context.Background(), prefix, clientv3.WithPrefix())
+	if err != nil {
+		return err
+	}
+
+	for _, ev := range resp.Kvs {
+		s.SetServiceList(string(ev.Key), string(ev.Value))
+	}
+
+	//监视前缀，修改变更的server
+	go s.watcher(prefix)
+	return nil
+}
+
+
+//watcher 监听前缀
+func (s *ServiceDiscovery) watcher(prefix string) {
+	rch := s.cli.Watch(context.Background(), prefix, clientv3.WithPrefix())
+	log.Printf(&amp;quot;watching prefix:%s now...&amp;quot;, prefix)
+	for wresp := range rch {
+		for _, ev := range wresp.Events {
+			switch ev.Type {
+			case mvccpb.PUT: //修改或者新增
+				s.SetServiceList(string(ev.Kv.Key), string(ev.Kv.Value))
+			case mvccpb.DELETE: //删除
+				s.DelServiceList(string(ev.Kv.Key))
+			}
+		}
+	}
+}
+
+//SetServiceList 新增服务地址
+func (s *ServiceDiscovery) SetServiceList(key, val string) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	s.serverList[key] = string(val)
+	log.Println(&amp;quot;put key :&amp;quot;, key, &amp;quot;val:&amp;quot;, val)
+}
+
+
+//DelServiceList 删除服务地址
+func (s *ServiceDiscovery) DelServiceList(key string) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	delete(s.serverList, key)
+	log.Println(&amp;quot;del key:&amp;quot;, key)
+}
+
+
+//GetServices 获取服务地址
+func (s *ServiceDiscovery) GetServices() []string {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	addrs := make([]string, 0)
+
+	for _, v := range s.serverList {
+		addrs = append(addrs, v)
+	}
+	return addrs
+}
+
+//Close 关闭服务
+func (s *ServiceDiscovery) Close() error {
+	return s.cli.Close()
+}
+
+
+/*
+
+var endpoints = []string{&amp;quot;localhost:2379&amp;quot;}
+ser := NewServiceDiscovery(endpoints)
+defer ser.Close()
+ser.WatchService(&amp;quot;/web/&amp;quot;)
+ser.WatchService(&amp;quot;/gRPC/&amp;quot;)
+for {
+	select {
+	case &amp;lt;-time.Tick(10 * time.Second):
+		log.Println(ser.GetServices())
+	}
+}
+
+*/
+
+//======================================================== 服务发现end
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;微服务调用etcd&#34;&gt;微服务调用etcd&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;//服务租约
+var endpoints = []string{&amp;quot;192.168.59.131:2379&amp;quot;}
+_, err := comutil.NewServiceRegister(endpoints, &amp;quot;server_order&amp;quot;, grpcUrl, 5)
+if err != nil {
+    log.Fatalln(err)
+}
+////监听续租相应chan
+//go ser.ListenLeaseRespChan()
+//select {
+//	case &amp;lt;-time.After(20 * time.Second):
+//    ser.Close()
+//}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;网关监听获取rpc地址&#34;&gt;网关监听获取rpc地址&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;var endpoints = []string{&amp;quot;192.168.59.131:2379&amp;quot;}
+ser := comutil.NewServiceDiscovery(endpoints)
+defer ser.Close()
+err = ser.WatchService(&amp;quot;server_order&amp;quot;)
+if err != nil {
+    return nil
+}
+grpcUrl = ser.GetServices()[0]
+&lt;/code&gt;&lt;/pre&gt;
+">ETCD详细解决</a>
+      </div>
       
       <div class="item">
         <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/wei-fu-wu-jia-gou-jie-xi/"" data-c="
@@ -4681,6 +4945,102 @@ func main()  {
 	})
 	r.Run(&amp;quot;:8883&amp;quot;)
 }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;微服务调用示例&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//引入
+&amp;quot;github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing&amp;quot;
+&amp;quot;github.com/opentracing/opentracing-go&amp;quot;
+&amp;quot;github.com/uber/jaeger-client-go/config&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;//核心代码
+func InitJaeger(service_name string,host_port string) (tracer opentracing.Tracer, closer io.Closer, err error) {
+	// 构造配置信息
+	cfg := &amp;amp;config.Configuration{
+		// 设置服务名称
+		ServiceName: service_name,
+		// 设置采样参数
+		Sampler: &amp;amp;config.SamplerConfig{
+			Type:  &amp;quot;const&amp;quot;, // 全采样模式
+			Param: 1,       // 开启全采样模式
+		},
+		Reporter: &amp;amp;config.ReporterConfig{
+			LogSpans           : true,
+			LocalAgentHostPort : host_port,
+		},
+	}
+	// 生成一条新tracer
+	tracer, closer, err = cfg.NewTracer()
+	if err == nil {
+		// 设置tracer为全局单例对象
+		opentracing.SetGlobalTracer(tracer)
+	}
+	return
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;//客户端
+//链路追踪
+tracer, closer, err := InitJaeger(&amp;quot;server_gateway&amp;quot;,&amp;quot;192.168.59.131:6831&amp;quot;)	//初始化jaeger，创建一条新tracer
+if err != nil {
+    panic(err)
+}
+defer closer.Close()
+
+//创建父标签
+span := tracer.StartSpan(&amp;quot;url = /order/ping/get&amp;quot;)
+defer span.Finish()
+
+//重新生成传递context.Context
+ctx := opentracing.ContextWithSpan(context.Background(), span)
+
+//创建rpc请求
+//注：grpc.WithUnaryInterceptor(grpc_opentracing.UnaryClientInterceptor(grpc_opentracing.WithTracer(tracer))) 此处为必须
+conn, err := grpc.Dial(&amp;quot;127.0.0.1:3333&amp;quot;, grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_opentracing.UnaryClientInterceptor(grpc_opentracing.WithTracer(tracer))))
+
+if err != nil {
+    log.Println(err)
+    return
+}
+//rpc 调用方法
+client := serverorder.NewPingClient(conn)
+r, err := client.Get(ctx,&amp;amp;serverorder.GetRequest{})
+if err != nil {
+    log.Println(err)
+    return
+}
+fmt.Println(r)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;//服务端
+
+//启动时候进行全局注入
+tracer, closer, err := InitJaeger()
+if err != nil {
+    panic(fmt.Sprintf(&amp;quot;ERROR: cannot init Jaeger: %v\n&amp;quot;, err))
+}
+defer closer.Close()
+
+//初始化
+lis, err := net.Listen(&amp;quot;tcp&amp;quot;, grpcUrl)
+if err != nil {log.Fatalf(&amp;quot;启动失败: %v&amp;quot;, err)}
+
+//启动一个rpc服务
+//注：grpc.UnaryInterceptor(grpc_opentracing.UnaryServerInterceptor(grpc_opentracing.WithTracer(tracer))) 此处需要
+s := grpc.NewServer(grpc.UnaryInterceptor(grpc_opentracing.UnaryServerInterceptor(grpc_opentracing.WithTracer(tracer))))
+
+
+//服务注入
+serverorder.RegisterPingServer(s,&amp;amp;server.ServerPing{})
+
+//服务启动
+log.Printf(fmt.Sprintf(&amp;quot;服务端口启动成功 %s&amp;quot;, grpcUrl))
+if err := s.Serve(lis); err != nil {
+    log.Fatalf(&amp;quot;当前服务启动失败: %v&amp;quot;, err)
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;//应用方法体重创建子标签
+//标签
+span, _ := opentracing.StartSpanFromContext(ctx, &amp;quot;Get&amp;quot;)
+defer span.Finish()
 &lt;/code&gt;&lt;/pre&gt;
 ">链路追踪</a>
       </div>

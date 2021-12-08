@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://v-micro.github.io</id>
     <title>蔡小辉</title>
-    <updated>2021-11-29T10:02:55.738Z</updated>
+    <updated>2021-12-08T03:26:46.471Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://v-micro.github.io"/>
     <link rel="self" href="https://v-micro.github.io/atom.xml"/>
@@ -10,6 +10,13 @@
     <logo>https://v-micro.github.io/images/avatar.png</logo>
     <icon>https://v-micro.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, 蔡小辉</rights>
+    <entry>
+        <title type="html"><![CDATA[ETCD详细解决]]></title>
+        <id>https://v-micro.github.io/post/etcd-an-zhuang-shi-yong/</id>
+        <link href="https://v-micro.github.io/post/etcd-an-zhuang-shi-yong/">
+        </link>
+        <updated>2021-11-30T04:08:56.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[微服务架构解析]]></title>
         <id>https://v-micro.github.io/post/wei-fu-wu-jia-gou-jie-xi/</id>
@@ -72,12 +79,5 @@
         <link href="https://v-micro.github.io/post/redis/">
         </link>
         <updated>2021-07-02T06:20:00.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[APP推广篇 - （1）]]></title>
-        <id>https://v-micro.github.io/post/app-tui-guang-pian-1/</id>
-        <link href="https://v-micro.github.io/post/app-tui-guang-pian-1/">
-        </link>
-        <updated>2021-06-29T10:00:15.000Z</updated>
     </entry>
 </feed>
