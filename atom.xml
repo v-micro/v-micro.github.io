@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://v-micro.github.io</id>
     <title>蔡小辉</title>
-    <updated>2021-12-08T09:40:52.467Z</updated>
+    <updated>2021-12-15T09:13:41.192Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://v-micro.github.io"/>
     <link rel="self" href="https://v-micro.github.io/atom.xml"/>
@@ -10,6 +10,13 @@
     <logo>https://v-micro.github.io/images/avatar.png</logo>
     <icon>https://v-micro.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, 蔡小辉</rights>
+    <entry>
+        <title type="html"><![CDATA[微服务演进路线]]></title>
+        <id>https://v-micro.github.io/post/wei-fu-wu-yan-jin-lu-xian/</id>
+        <link href="https://v-micro.github.io/post/wei-fu-wu-yan-jin-lu-xian/">
+        </link>
+        <updated>2021-12-15T03:29:28.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[ETCD详细解决]]></title>
         <id>https://v-micro.github.io/post/etcd-an-zhuang-shi-yong/</id>
@@ -72,12 +79,5 @@
         <link href="https://v-micro.github.io/post/linux-crontab-ding-shi-ren-wu/">
         </link>
         <updated>2021-07-14T09:21:50.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[redis]]></title>
-        <id>https://v-micro.github.io/post/redis/</id>
-        <link href="https://v-micro.github.io/post/redis/">
-        </link>
-        <updated>2021-07-02T06:20:00.000Z</updated>
     </entry>
 </feed>

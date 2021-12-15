@@ -9,7 +9,7 @@
 <meta name="description" content="此身此时此地，所见所闻所想">
 <meta name="theme-color" content="#000">
 <title>docker快速构建 | 蔡小辉</title>
-<link rel="shortcut icon" href="/favicon.ico?v=1638937309487">
+<link rel="shortcut icon" href="/favicon.ico?v=1639559617737">
 <link rel="stylesheet" href="/media/css/pisces.css">
 <link rel="stylesheet" href="/media/fonts/font-awesome.css">
 <link
@@ -186,7 +186,7 @@
     <div class="sidebar-item-box">
       <a href="/archives/">
         
-        <span class="site-item-stat-count">25</span>
+        <span class="site-item-stat-count">26</span>
         <span class="site-item-stat-name language" data-lan="article">文章</span>
       </a>
     </div>
@@ -1447,6 +1447,119 @@ TCP/UDP/8302: 8302端口用于单个或多个数据中心之间的服务器节�
       <hr>
     </div>
     <div class="result" id="result">
+      
+      <div class="item">
+        <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/wei-fu-wu-yan-jin-lu-xian/"" data-c="
+          &lt;h3 id=&#34;微服务构成组件&#34;&gt;微服务构成组件&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;注册中心&lt;br&gt;
+服务A去调用服务B，你不知道服务B在哪个服务器上面，不可能在配置文件上写死吧？让每一个服务都进行一个注册，把自己所在的服务器地址注册上去，其他的服务可以进行服务发现，知道别的服务器地址在哪。&lt;/li&gt;
+&lt;li&gt;RPC框架&lt;br&gt;
+不同的服务器怎么进行远程调用呢？RPC框架可以进行远程的调用&lt;/li&gt;
+&lt;li&gt;多环境隔离&lt;br&gt;
+服务A在测试环境调用测试环境的服务B，不会调用生产环境的服务B。集成测试环境、功能测试环境、预发布测试环境等。&lt;/li&gt;
+&lt;li&gt;自动化部署&lt;br&gt;
+线上部署要纯粹的自动化部署&lt;/li&gt;
+&lt;li&gt;分布式事务&lt;br&gt;
+单块系统连接单个数据库，他只要用单个数据库的事务就行了，一个请求需要调用不同的服务器上面的不同的数据库。如果服务A更新了自己的库，服务C失败了，就需要分布式事务&lt;/li&gt;
+&lt;li&gt;限流/熔断/降级&lt;br&gt;
+一个服务挂了，其他服务也会连锁式宕机。服务雪崩现象&lt;/li&gt;
+&lt;li&gt;配置中心&lt;br&gt;
+不用每个服务更新都去更新配置文件。配置中心修改后，会把配置推送给服务，服务可以立马使用最新的配置&lt;/li&gt;
+&lt;li&gt;监控中心&lt;br&gt;
+服务很多，进行监控，业务指标，服务器的硬件情况&lt;/li&gt;
+&lt;li&gt;链路追踪&lt;br&gt;
+每一个请求都是很多服务串成的一个链路，需要对每一条链路的执行进行一个监控。这条链路耗时多少时间，是否成功等&lt;/li&gt;
+&lt;li&gt;日志中心&lt;br&gt;
+每一个微服务都把服务上报到日志中心。在日志中心里对日志进行检索&lt;/li&gt;
+&lt;li&gt;服务治理&lt;br&gt;
+会包含之前的很多东西，对这些服务怎么来管控，怎么管理怎么治理。&lt;/li&gt;
+&lt;li&gt;API网关&lt;br&gt;
+用户都是发送请求给前端或者客户端，再前后端交互。API网关是屏蔽掉后端所有的服务。减少前端调用的复杂度。API网关会把不同的请求路由给不同的服务。进行微服务和后端的解耦&lt;/li&gt;
+&lt;li&gt;安全认证&lt;br&gt;
+安全认证、统一限流等。符合认证才能发现请求&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;微服务工作流程&#34;&gt;微服务工作流程&lt;/h3&gt;
+&lt;figure data-type=&#34;image&#34; tabindex=&#34;1&#34;&gt;&lt;img src=&#34;https://v-micro.github.io/post-images/1639553601371.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/figure&gt;
+&lt;h3 id=&#34;1注册中心&#34;&gt;1.注册中心&lt;/h3&gt;
+&lt;p&gt;注册中心涉及到的三大角色：注册中心，服务提供者，服务消费者&lt;/p&gt;
+&lt;p&gt;关系流程描述：&lt;br&gt;
+1.微服务启动。将自己的实例信息（ip，端口，服务名）注册到注册中心，&lt;br&gt;
+2.服务消费者从注册中心获取到服务实例信息，通过ip+端口的方式远程调用&lt;br&gt;
+3.各个微服务通过心跳来上报注册中心，注册中心以某个时间段有没有接受上报信息，来决定是否下线某服务实例&lt;br&gt;
+4.微服务发胜变动时如：增加实例或ip变动，重新注册信息到注册中心，这样服务消费者无需改动,直接从注册中心获取最新信息即可&lt;/p&gt;
+&lt;p&gt;ps: 作者倾向于选择consul&lt;/p&gt;
+&lt;figure data-type=&#34;image&#34; tabindex=&#34;2&#34;&gt;&lt;img src=&#34;https://v-micro.github.io/post-images/1639555327784.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34;&gt;&lt;/figure&gt;
+&lt;h3 id=&#34;rpc框架&#34;&gt;RPC框架&lt;/h3&gt;
+&lt;p&gt;主要分为两类，一类是跟语言平台绑定的，另一类则是与语言无关即跨语言平台&lt;/p&gt;
+&lt;p&gt;跟语言平台绑定的RPC框架，简介可自行搜索&lt;br&gt;
+Dubbo：仅支持JAVA语言&lt;br&gt;
+Motan: 仅支持JAVA语言&lt;br&gt;
+Tars: 仅支持JAVA语言&lt;br&gt;
+Spring Cloud :  仅支持JAVA语言&lt;/p&gt;
+&lt;p&gt;跨语言RPC框架&lt;br&gt;
+gRPC : 支持多种语言&lt;br&gt;
+Thrift : 支持多种语言&lt;/p&gt;
+&lt;p&gt;ps: 作者学习的是GO 采用的是gRPC来进行通讯&lt;/p&gt;
+&lt;h3 id=&#34;多环境隔离&#34;&gt;多环境隔离&lt;/h3&gt;
+&lt;p&gt;运行环境隔离可以使用docker 虚拟多个运行环境，从而使得每个虚拟环境独立运行，互不干扰。&lt;/p&gt;
+&lt;h3 id=&#34;自动部署&#34;&gt;自动部署&lt;/h3&gt;
+&lt;p&gt;持续化的部署，可以采用此种技术解决方案。&lt;br&gt;
+gitlab：仓库代码进行存储&lt;br&gt;
+harbor : 镜像仓库存储&lt;br&gt;
+jenkins：持续的CI部署&lt;br&gt;
+docker: 代码的运行环境&lt;/p&gt;
+&lt;p&gt;可以采用上面的部署方案&lt;/p&gt;
+&lt;h3 id=&#34;分布式事务&#34;&gt;分布式事务&lt;/h3&gt;
+&lt;p&gt;1.两阶段提交(2PC)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;1.1 准备阶段&lt;br&gt;
+协调者询问参与者是否执行成功，参与者发回事务执行结果&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;1.2 提交阶段&lt;br&gt;
+参与者都执行成功，事务协调者发送指令给参与者提交事务，否则就回滚事务&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;存在问题：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;1.同步阻塞，&lt;/li&gt;
+&lt;li&gt;2.协调者发生故障，会造成很大影响，&lt;/li&gt;
+&lt;li&gt;3.commit时候网络发生异常。使得数据不一致&lt;/li&gt;
+&lt;li&gt;4.任意一个节点失败都会导致整个事务失败，没有完善的容错机制&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;2.补偿事务（TCC）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;针对每个事务，都需要对应一个补偿事务&lt;/li&gt;
+&lt;li&gt;实现思路：A向B转钱&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+&lt;li&gt;try 时候 调用接口 把钱全部冻结起来&lt;/li&gt;
+&lt;li&gt;在confirm 阶段执行转钱操作，转账成功进行解冻&lt;/li&gt;
+&lt;li&gt;如果第二步执行成功，那么转账成功，如果失败，则调用远程冻结接口对应的解冻方法&lt;/li&gt;
+&lt;li&gt;存在问题
+&lt;ul&gt;
+&lt;li&gt;比2PC简单，但是数据一致性也要差一些。&lt;/li&gt;
+&lt;li&gt;2,3步都有可能失败，业务流程不好定义，可能TCC无法处理&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;3.本地消息表（异步确保）&lt;/p&gt;
+&lt;p&gt;在分布式事务操作的一方完成写业务数据的操作之后向本地消息表发送一个消息，本地事务能保证这个消息一定会被写入本地消息表中。&lt;/p&gt;
+&lt;p&gt;之后将本地消息表中的消息转发到 Kafka 等消息队列中，如果转发成功则将消息从本地消息表中删除，否则继续重新转发。&lt;/p&gt;
+&lt;p&gt;在分布式事务操作的另一方从消息队列中读取一个消息，并执行消息中的操作。&lt;/p&gt;
+&lt;p&gt;优点： 一种非常经典的实现，避免了分布式事务，实现了最终一致性。&lt;br&gt;
+缺点： 消息表会耦合到业务系统中，如果没有封装好的解决方案，会有很多杂活需要处理。&lt;/p&gt;
+&lt;p&gt;4.MQ 事务消息&lt;/p&gt;
+&lt;p&gt;第一阶段Prepared消息，会拿到消息的地址。 第二阶段执行本地事务，第三阶段通过第一阶段拿到的地址去访问消息，并修改状态。&lt;/p&gt;
+&lt;p&gt;也就是说在业务方法内要想消息队列提交两次请求，一次发送消息和一次确认消息。如果确认消息发送失败了RocketMQ会定期扫描消息集群中的事务消息，这时候发现了Prepared消息，它会向消息发送者确认，所以生产方需要实现一个check接口，RocketMQ会根据发送端设置的策略来决定是回滚还是继续发送确认消息。这样就保证了消息发送与本地事务同时成功或同时失败。&lt;/p&gt;
+&lt;p&gt;优点： 实现了最终一致性，不需要依赖本地数据库事务。&lt;br&gt;
+缺点： 实现难度大，主流MQ不支持，RocketMQ事务消息部分代码也未开源。&lt;/p&gt;
+">微服务演进路线</a>
+      </div>
       
       <div class="item">
         <a class="result-title" style="opacity: 0;" href="https://v-micro.github.io/post/etcd-an-zhuang-shi-yong/"" data-c="
@@ -5421,7 +5534,7 @@ ETCD_ADVERTISE_CLIENT_URLS=&amp;quot;http://10.11.4.39:2379&amp;quot;
 启动etcd
 &amp;gt; systemctl start etcd
 配置etcd的flannel信息
-&amp;gt; etcdctl -C 10.11.4.39:2379 set /atomic.io/network/config &#39;{&amp;quot;Network&amp;quot;:&amp;quot;172.17.0.1/16&amp;quot;}&#39;
+&amp;gt; etcdctl set /atomic.io/network/config &#39;{&amp;quot;Network&amp;quot;:&amp;quot;172.17.0.1/16&amp;quot;}&#39;
 
 安装kubernetes-master
 &amp;gt; yum install kubernetes-master
@@ -5465,50 +5578,6 @@ KUBELET_API_SERVER=&amp;quot;--api-servers=http://10.11.4.39:8080&amp;quot;
 显示
 NAME        STATUS    AGE
 127.0.0.1   Ready     21s
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;kubectl常用基本操作&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;根据yaml 配置文件一次性创建service、rc
-&amp;gt; kubectl create -f my-service.yaml -f my-rc.yaml
-
-获取运行中的deployment
-&amp;gt; kubectl get deployment -o wide
-
-//查看详情 -o wide
-
-查看资源对象
-查看所有pod 列表
-&amp;gt; kubectl get pod -n &amp;lt;namespace&amp;gt;
-查看RC和service 列表
-&amp;gt; kubectl get rc,svc
-
-查看资源信息
-显示Node的详细信息
-&amp;gt; kubectl describe node &amp;lt;node-name&amp;gt;
-显示Pod的详细信息
-&amp;gt; kubectl describe pod &amp;lt;pod-name&amp;gt;
-
-删除资源对象
-基于pod.yaml 定义的名称删除pod
-&amp;gt; kubectl delete -f pod.yaml
-删除所有包含某个label的pod 和service
-&amp;gt; kubectl delete pod,svc -l name=&amp;lt;label-name&amp;gt;
-删除所有Pod
-&amp;gt; kubectl delete pod --all
-删除rc/svc
-&amp;gt; kubectl delete rc/nginx-master
-
-执行容器的命令
-执行pod 的date 命令
-&amp;gt; kubectl exec &amp;lt;pod-name&amp;gt; -- date
-通过bash 获得pod中某个容器的TTY，相当于登陆容器
-&amp;gt; kubectl exec -it &amp;lt;pod-name&amp;gt; -c &amp;lt;container-name&amp;gt; -- bash
-
-查看容器的日志
-&amp;gt; kubectl logs &amp;lt;pod-name&amp;gt;
-
-查看未认证的节点
-kubectl get csr
-
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;示例部署第一个应用&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;vim nginx-rc.yaml
@@ -5564,134 +5633,51 @@ spec:
 &amp;gt; rpm2cpio python-rhsm-certificates-1.19.10-1.el7_4.x86_64.rpm | cpio -iv --to-stdout ./etc/rhsm/ca/redhat-uep.pem | tee /etc/rhsm/ca/redhat-uep.pem
 &amp;gt; docker pull registry.access.redhat.com/rhel7/pod-infrastructure:latest
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;使用安装脚本安装&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;https://github.com/lizhenliang/ansible-install-k8s
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;k8s yml参数注释&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;cat /opt/linux-yml/nginx.yml
+&lt;p&gt;kubectl常用基本操作&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;根据yaml 配置文件一次性创建service、rc
+&amp;gt; kubectl create -f my-service.yaml -f my-rc.yaml
 
-kind: Deployment #对象类型，是deployment控制器，kubectl explain Deployment
-apiVersion: extensions/v1beta1  #指定这个对象属于哪个api分组，它的API版本是多少，
-								# kubectl explain Deployment.apiVersion
-metadata:     #pod的元数据信息，kubectl explain Deployment.metadata
-  labels:     #自定义pod的标签，kubectl explain Deployment.metadata.labels
-    app: linux-nginx-deployment-label #标签名称为app值为linux-nginx-deployment-label， 后面会用到此标签
-  name: linux-nginx-deployment        #pod的名称 
-  namespace: linux-ns                 #把pod的创建到指定的namespace，默认是default
-spec:            #定义deployment中容器的详细信息，kubectl explain Deployment.spec
-  replicas: 1    #创建出的pod的副本数，即多少个pod，默认值为1 
-  selector:      #定义标签选择器
-    matchLabels: #定义匹配的标签，必须要设置
-      app: linux-nginx-selector   #匹配的目标标签
-  template:      #定义模板，必须定义，模板是起到描述要创建的pod的作用
-    metadata:    #定义模板元数据
-      labels:    #定义模板label，Deployment.spec.template.metadata.labels
-        app: linux-nginx-selector   #定义标签，必须等于 matchLabels 定义的标签
-    spec:          #定义pod信息
-      containers:  #定义pod中容器列表，可以多个至少一个，pod不能动态增减容器(想新添加容器，需要把原有pod删除，重新创建pod)
-      - name: linux-nginx-container                      #容器名称
-        image: harbor.linux.com/web-images/nginx:1.14.2  #镜像地址
-        #command: [&amp;quot;/apps/tomcat/bin/run_tomcat.sh&amp;quot;]     #容器启动执行的命令或脚本           
-        #imagePullPolicy: IfNotPresent                   #本地有指定的镜像，就不去harbor中拉取
-        imagePullPolicy: Always    #拉取镜像策略；不管本地有没有所指定的镜像，都去harbor拉取
-        ports:                #定义容器端口列表
-        - containerPort: 80   #定义一个端口
-          protocol: TCP       #端口协议,TCP或者UDP
-          name: http          #端口名称
-        - containerPort: 443  #定义一个端口
-          protocol: TCP       #端口协议 
-          name: https         #端口名称
-        env:                  #给容器传递配置的环境变量
-        - name: &amp;quot;password&amp;quot;    #变量名称。必须要用引号引起来
-          value: &amp;quot;123456&amp;quot;     #当前变量的值
-        - name: &amp;quot;age&amp;quot;         #另一个变量名称 
-          value: &amp;quot;18&amp;quot;         #另一个变量的值
-        resources:            #对容器资源的请求设置和限制设置
-          limits:             #硬限制；限制容器使用宿主机资源上限
-            cpu: 2            #cpu的限制，单位为core数，可以写0.5或者500m(毫核)等CPU压缩值，1000毫核
-            memory: 2Gi       #内存限制，单位可以为Mib/Gib，将用于docker run --memory参数
-          requests:  #资源请求的设置；当构建pod时，过滤出哪些node节点的剩余资源符合下面所指定的值，则创建pod时，才有可能把pod往该node节点调度；如果不够下面所指定的值，则创建pod时不会把pod往不符合要求的node上调度
-            cpu: 1        #cpu请求数，容器启动的初始可用数量,可以写0.5或者500m等CPU压缩值
-            memory: 512Mi #内存请求大小，容器启动的初始可用数量，用于调度pod时候使用
+获取运行中的deployment
+&amp;gt; kubectl get deployment -o wide
 
----
-kind: Service    #对象类型为service；pod要想被外部访问，就必须指定一个service，service会在宿主机打开一个nodeport；service不指定nodeport，则该service仅限于k8s内部调用	     
-apiVersion: v1   #service API版本，service.apiVersion 
-metadata:        #定义service元数据，service.metadata
-  labels:        #自定义service的标签，service.metadata.labels
-    app: linux-nginx     #定义service标签的内容
-  name: linux-nginx-spec #定义service的名称，此名称会被DNS解析
-  namespace: linux-ns    #该service隶属于的namespaces名称，即把service创建到哪个namespace里面，并且service必须与pod在同一个namespace中，否则在调用时，service找不到所调用的pod 
-spec:               #定义service的详细信息，service.spec
-  type: NodePort    #NodePort表示在宿主机打开一个监听端口；service的类型，定义服务的访问方式，默认为ClusterIP(不会再宿主机打开一个监听端口，只为k8s内部提供服务)，service.spec.type
-  ports:            #定义访问端口， service.spec.ports
-  - name: http      #定义一个端口名称
-    port: 80        #service的端口 
-    protocol: TCP   #协议类型;service是k8s内部的一个传输层的负载均衡 
-    targetPort: 80  #目标pod的端口 
-    nodePort: 30001 #node节点暴露的端口
-  - name: https     #SSL 端口
-    port: 443       #service 443端口 
-    protocol: TCP   #端口协议 
-    targetPort: 443 #目标pod端口 
-    nodePort: 30043 #node节点暴露的SSL端口
-  selector:   #service的标签选择器，定义把用户请求转发给指定label标签的pod；service会把符合label标签的pod添加到后端可被调度的endpoint列表中
-    app: linux-nginx-selector #将流量转发到指定的pod上，须等于Deployment.spec.selector.matchLabels
+//查看详情 -o wide
 
+查看资源对象
+查看所有pod 列表
+&amp;gt; kubectl get pod -n &amp;lt;namespace&amp;gt;
+查看RC和service 列表
+&amp;gt; kubectl get rc,svc
 
-编写的测试用例
+查看资源信息
+显示Node的详细信息
+&amp;gt; kubectl describe node &amp;lt;node-name&amp;gt;
+显示Pod的详细信息
+&amp;gt; kubectl describe pod &amp;lt;pod-name&amp;gt;
 
-命名规则 项目-服务-deploy.yaml
-vim volist-test-deploy.yaml
+删除资源对象
+基于pod.yaml 定义的名称删除pod
+&amp;gt; kubectl delete -f pod.yaml
+删除所有包含某个label的pod 和service
+&amp;gt; kubectl delete pod,svc -l name=&amp;lt;label-name&amp;gt;
+删除所有Pod
+&amp;gt; kubectl delete pod --all
+删除rc/svc
+&amp;gt; kubectl delete rc/nginx-master
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: volist-test
-spec:
-  replicas: 4
-  selector:
-    matchLabels:
-      app: volist-test
-  template:
-    metadata:
-      labels:
-        app: volist-test
-    spec:
-      containers:
-      - name: volist-test
-        image: nginx:1.14.0  #镜像地址
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 80
-          protocol: TCP
-          name: http
-        resources:
-          limits:
-            cpu: 0.5
-            memory: 512Mi
-          requests:
-            cpu: 0.5
-            memory: 512Mi
+执行容器的命令
+执行pod 的date 命令
+&amp;gt; kubectl exec &amp;lt;pod-name&amp;gt; -- date
+通过bash 获得pod中某个容器的TTY，相当于登陆容器
+&amp;gt; kubectl exec -it &amp;lt;pod-name&amp;gt; -c &amp;lt;container-name&amp;gt; -- bash
 
----
-kind: Service   
-apiVersion: v1
-metadata:
-  name: volist-test
-spec:
-  type: NodePort    #NodePort表示在宿主机打开一个监听端口；service的类型，定义服务的访问方式，默认为ClusterIP(不会再宿主机打开一个监听端口，只为k8s内部提供服务)，service.spec.type
-  ports:
-  - name: http      #定义一个端口名称
-    port: 80        #service的端口 
-    protocol: TCP   #协议类型;service是k8s内部的一个传输层的负载均衡 
-    targetPort: 80  #目标pod的端口 
-    nodePort: 30001 #node节点暴露的端口
-  selector:
-    app: volist-test
+查看容器的日志
+&amp;gt; kubectl logs &amp;lt;pod-name&amp;gt;
+
+查看未认证的节点
+kubectl get csr
 
 &lt;/code&gt;&lt;/pre&gt;
-">kubernetes集群搭建</a>
+">kubernetes yum育儿安装</a>
       </div>
       
       <div class="item">
